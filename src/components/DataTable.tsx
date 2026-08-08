@@ -4,7 +4,6 @@ import { useMemo, useState, useCallback } from "react";
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import EditableCell from "@/components/EditableCell";
-import PhotoUploadCell from "@/components/PhotoUploadCell";
 import { useStudentStore } from "@/store/useStudentStore";
 import { FIELD_ORDER, FIELD_LABELS } from "@/types";
 import type { StudentField } from "@/types";
