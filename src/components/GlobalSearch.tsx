@@ -4,9 +4,17 @@ import { useState, useEffect, useRef } from "react";
 import { Search, Loader2, User, Building2, Phone } from "lucide-react";
 import type { Student } from "@/types";
 
+interface SearchResultStudent extends Student {
+  schoolId: string;
+  schoolName: string;
+  className: string;
+  sectionName: string;
+  academicYear: string;
+}
+
 export default function GlobalSearch() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<(Student & { schoolName: string })[]>([]);
+  const [results, setResults] = useState<SearchResultStudent[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout>(null);
 
@@ -39,7 +47,7 @@ export default function GlobalSearch() {
     };
   }, [query]);
 
-  const goToStudent = (s: Student & { schoolName: string }) => {
+  const goToStudent = (s: SearchResultStudent) => {
     const sp = new URLSearchParams();
     if (s.schoolId) sp.set("school", s.schoolId);
     if (s.className) sp.set("class", s.className);
