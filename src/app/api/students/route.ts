@@ -65,7 +65,6 @@ export async function GET(request: NextRequest) {
       sectionName: row.section_name,
       mobileNumber: row.mobile_number || "",
       address: row.address || "",
-      photoUrl: row.photo_url || "",
       academicYear: row.academic_year,
       isActive: row.is_active === 1,
       createdAt: row.created_at,
@@ -102,7 +101,6 @@ export async function POST(request: NextRequest) {
       dob = "",
       mobileNumber = "",
       address = "",
-      photoUrl = "",
     } = body;
 
     if (!schoolId || !studentName || !className || !sectionName || !academicYear) {
@@ -119,12 +117,12 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     await db.execute({
-      sql: `INSERT INTO students (id, section_id, school_id, admission_no, student_name, father_name, mother_name, dob, class_name, section_name, mobile_number, address, photo_url, academic_year, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO students (id, section_id, school_id, admission_no, student_name, father_name, mother_name, dob, class_name, section_name, mobile_number, address, academic_year, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         id, sectionId, schoolId, admissionNo, studentName,
         fatherName, motherName, dob, className, sectionName,
-        mobileNumber, address, photoUrl, academicYear, now, now,
+        mobileNumber, address, academicYear, now, now,
       ],
     });
 
@@ -179,7 +177,6 @@ export async function PATCH(request: NextRequest) {
       sectionName: "section_name",
       mobileNumber: "mobile_number",
       address: "address",
-      photoUrl: "photo_url",
       academicYear: "academic_year",
     };
 

@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
 
     // Default: XLSX
     const xlsxBuffer = generateXlsx(studentsToExport);
-    return new NextResponse(xlsxBuffer, {
+    return new NextResponse(new Uint8Array(xlsxBuffer), {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

@@ -1,18 +1,23 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { AlertTriangle, Loader2, Check, X } from "lucide-react";
 import type { ConfidenceLevel } from "@/types";
+
+export type SaveStatus = "idle" | "saving" | "saved" | "failed";
 
 interface EditableCellProps {
   value: string;
   onChange: (value: string) => void;
   confidence?: ConfidenceLevel;
+  saveStatus?: SaveStatus;
 }
 
 export default function EditableCell({
   value,
   onChange,
   confidence = "high",
+  saveStatus = "idle",
 }: EditableCellProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -41,23 +46,21 @@ export default function EditableCell({
 
   const valueIsUnclear = value === "UNCLEAR";
   const valueIsEmpty = value === "";
+  const needsReview = valueIsUnclear || valueIsEmpty || confidence === "low" || confidence === "medium";
 
-  // Conditional styling based on confidence
-  let cellClasses = "px-2.5 py-1.5 text-sm rounded-lg cursor-pointer border border-transparent ";
+  let cellClasses =
+    "px-3 py-2 text-[0.875rem] cursor-pointer transition-colors duration-150 relative group ";
+
   if (valueIsUnclear || valueIsEmpty) {
-    cellClasses +=
-      "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800 italic ";
-  } else if (confidence === "low") {
-    cellClasses +=
-      "bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/25 dark:text-amber-400 dark:border-amber-800 ";
-  } else if (confidence === "medium") {
-    cellClasses +=
-      "bg-yellow-50 text-yellow-900 border-yellow-100 dark:bg-yellow-950/20 dark:text-yellow-400 dark:border-yellow-800 ";
+    cellClasses += "text-danger italic font-medium ";
+  } else if (confidence === "low" || confidence === "medium") {
+    cellClasses += "text-warning ";
   } else {
-    cellClasses +=
-      "hover:border-ring hover:bg-muted/30 dark:hover:bg-muted/20 ";
+    cellClasses += "text-foreground hover:bg-muted/40 ";
   }
-  cellClasses += "transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap min-w-[80px]";
+
+  cellClasses +=
+    "outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap min-w-[5rem] font-mono tabular-nums";
 
   if (editing) {
     return (
@@ -71,9 +74,9 @@ export default function EditableCell({
           if (e.key === "Enter") commit();
           if (e.key === "Escape") cancel();
         }}
-        className="w-full px-2.5 py-1.5 text-sm border-2 border-primary rounded-lg
-                   bg-card text-foreground outline-none ring-2 ring-primary/30
-                   min-w-[80px]"
+        className="w-full px-3 py-2 text-[0.875rem] border-b-2 border-primary rounded-none
+                   bg-muted/30 text-foreground outline-none font-mono tabular-nums
+                   min-w-[5rem]"
         autoFocus
       />
     );
@@ -85,30 +88,69 @@ export default function EditableCell({
       tabIndex={0}
       onClick={() => setEditing(true)}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") setEditing(true);
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setEditing(true);
+        }
       }}
       className={cellClasses}
       title={
         valueIsUnclear
-          ? "Could not read — click to type manually"
+          ? "Could not read — click to type"
           : valueIsEmpty
-            ? "Empty — click to fill in"
+            ? "Empty — click to fill"
             : confidence === "low"
-              ? "AI unsure — click to verify"
+              ? "Low confidence — please verify"
               : confidence === "medium"
-                ? "AI moderately confident — click to check"
+                ? "Medium confidence — please verify"
                 : "Click to edit"
       }
     >
-      {valueIsUnclear ? (
-        <span className="flex items-center gap-1 text-xs font-medium">
-          ⚠️ UNCLEAR
-        </span>
-      ) : valueIsEmpty ? (
-        <span className="text-xs italic opacity-50">(empty)</span>
-      ) : (
-        value
+      {/* Subtle bottom border for status instead of full pill background */}
+      {needsReview && (
+        <div
+          className={`absolute bottom-0 left-0 right-0 h-[2px] opacity-60
+            ${(valueIsUnclear || valueIsEmpty) ? 'bg-danger' : 'bg-warning'}
+          `}
+        />
       )}
-    </div>
+
+      <div className="relative z-10 flex items-center gap-1.5">
+        {valueIsUnclear ? (
+          <>
+            <AlertTriangle size={12} strokeWidth={2} />
+            <span className="text-[0.75rem] font-bold">UNCLEAR</span>
+          </>
+        ) : valueIsEmpty ? (
+          <span className="text-[0.75rem] italic opacity-50">(empty</span>
+        ) : (
+          value
+        )}
+     </div>
+
+      {/* Per-cell autosave status */}
+      {saveStatus !== "idle" && (
+        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1 text-[0.625rem] font-medium uppercase tracking-[0.04em] pointer-events-none whitespace-nowrap">
+          {saveStatus === "saving" && (
+            <>
+              <Loader2 size={9} strokeWidth={2} className="animate-spin text-muted-fg" />
+              <span className="text-muted-fg">saving</span>
+            </>
+          )}
+          {saveStatus === "saved" && (
+            <>
+              <Check size={9} strokeWidth={2.5} className="text-success" />
+              <span className="text-success">saved</span>
+            </>
+          )}
+          {saveStatus === "failed" && (
+            <>
+              <X size={9} strokeWidth={2.5} className="text-danger" />
+              <span className="text-danger">failed</span>
+            </>
+          )}
+       </div>
+      )}
+ </div>
   );
 }

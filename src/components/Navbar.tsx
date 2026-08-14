@@ -20,43 +20,47 @@ export default function Navbar() {
   };
 
   return (
-    <header className="border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 font-semibold text-lg tracking-tight text-foreground">
-          <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-            <span className="text-primary-fg font-bold text-sm">ID</span>
-          </div>
-          <span className="hidden sm:inline">School ID Extractor</span>
-        </Link>
+    <header className="border-b border-border bg-background/85 backdrop-blur-sm sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        {/* Brand */}
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <span className="text-primary-fg font-display font-bold text-[0.95rem] leading-none">
+              ID
+           </span>
+         </div>
+          <span className="font-display font-bold text-[1.0625rem] tracking-tight text-foreground hidden sm:inline">
+            School ID Extractor
+         </span>
+       </Link>
 
-        {/* Nav + Theme toggle */}
-        <div className="flex items-center gap-0.5">
+        {/* Right cluster */}
+        <nav className="flex items-center gap-1">
           <Link
             href="/quick"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors mr-2"
-            title="Quick Export Mode (No Database)"
+            className="flex items-center gap-1.5 px-3 h-9 rounded-lg text-[0.8125rem] font-medium text-muted-fg hover:text-foreground hover:bg-muted transition-colors"
+            title="Quick export (no database)"
           >
-            <Zap size={15} className="fill-current" />
-            <span className="text-sm font-medium hidden sm:inline">Quick Export</span>
-          </Link>
+            <Zap size={15} strokeWidth={1.75} />
+            <span className="hidden sm:inline">Quick</span>
+         </Link>
           <Link
             href="/schools"
-            className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-muted-fg hover:text-foreground"
+            className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-fg hover:text-foreground hover:bg-muted transition-colors"
             title="Browse school hierarchy"
           >
-            <Building2 size={18} />
-          </Link>
-          {/* Theme toggle */}
+            <Building2 size={17} strokeWidth={1.5} />
+         </Link>
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg text-muted-fg hover:text-foreground hover:bg-muted/50 transition-colors"
+            className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-fg hover:text-foreground hover:bg-muted transition-colors"
             title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label="Toggle color theme"
           >
-            {isDark ? <Sun size={17} /> : <Moon size={17} />}
-          </button>
-        </div>
-      </div>
-    </header>
+            {isDark ? <Sun size={17} strokeWidth={1.5} /> : <Moon size={17} strokeWidth={1.5} />}
+         </button>
+       </nav>
+     </div>
+   </header>
   );
 }

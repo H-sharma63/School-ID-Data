@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
-import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, Search } from "lucide-react";
 import { toast } from "@/lib/toast";
-import EditableCell from "@/components/EditableCell";
+import EditableCell, { SaveStatus } from "@/components/EditableCell";
 import { useStudentStore } from "@/store/useStudentStore";
 import { FIELD_ORDER, FIELD_LABELS } from "@/types";
 import type { StudentField } from "@/types";
@@ -14,18 +14,31 @@ export default function DataTable() {
   const [sortField, setSortField] = useState<StudentField | "">("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  // Per-cell save status: key = `${studentId}:${field}`
+  const [saveStatuses, setSaveStatuses] = useState<Record<string, SaveStatus>>({});
 
-  // Sort
   const sorted = useMemo(() => {
-    if (!sortField) return students;
-    return [...students].sort((a, b) => {
+    let filtered = students;
+    if (searchQuery) {
+      const lowerQ = searchQuery.toLowerCase();
+      filtered = students.filter(s =>
+        (s.admissionNo?.toLowerCase().includes(lowerQ)) ||
+        (s.studentName?.toLowerCase().includes(lowerQ)) ||
+        (s.fatherName?.toLowerCase().includes(lowerQ)) ||
+        (s.mobileNumber?.toLowerCase().includes(lowerQ))
+      );
+    }
+
+    if (!sortField) return filtered;
+    return [...filtered].sort((a, b) => {
       const aVal = String(a[sortField] ?? "").toLowerCase();
       const bVal = String(b[sortField] ?? "").toLowerCase();
       if (aVal < bVal) return sortDir === "asc" ? -1 : 1;
       if (aVal > bVal) return sortDir === "asc" ? 1 : -1;
       return 0;
     });
-  }, [students, sortField, sortDir]);
+  }, [students, sortField, sortDir, searchQuery]);
 
   const toggleAll = useCallback(() => {
     setSelectedIds((prev) =>
@@ -43,15 +56,19 @@ export default function DataTable() {
 
   const handleSort = useCallback(
     (field: StudentField) => {
-      setSortField((prev) => (prev === field && sortDir === "asc" ? field : field));
-      setSortDir((prev) => (sortField === field && prev === "asc" ? "desc" : "asc"));
+      if (sortField === field) {
+        setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+      } else {
+        setSortField(field);
+        setSortDir("asc");
+      }
     },
-    [sortField, sortDir]
+    [sortField]
   );
 
   const handleDeleteSelected = useCallback(async () => {
     if (selectedIds.size === 0) return;
-    if (!window.confirm(`Permanently delete ${selectedIds.size} student(s) from the database? This cannot be undone.`)) return;
+    if (!window.confirm(`Permanently delete ${selectedIds.size} student record(s) from the database?`)) return;
 
     setIsDeleting(true);
     try {
@@ -66,7 +83,7 @@ export default function DataTable() {
 
       deleteStudents(ids);
       setSelectedIds(new Set());
-      toast.success(`Deleted ${ids.length} records`);
+      toast.success(`Deleted ${ids.length} record${ids.length !== 1 ? "s" : ""}`);
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete records");
@@ -76,155 +93,184 @@ export default function DataTable() {
   }, [selectedIds, deleteStudents]);
 
   const handleCellChange = useCallback(async (id: string, field: StudentField, newVal: string) => {
-    // Optimistic UI update
+    const key = `${id}:${field}`;
     updateStudent(id, field, newVal);
+    setSaveStatuses(prev => ({ ...prev, [key]: "saving" }));
 
-    // Persist to DB
     try {
       const res = await fetch("/api/students", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, [field]: newVal }),
       });
-      if (!res.ok) {
-        // We could revert the optimistic update here if it fails
-        throw new Error("Failed to save edit");
-      }
+      if (!res.ok) throw new Error("Failed to save edit");
+      setSaveStatuses(prev => ({ ...prev, [key]: "saved" }));
+      // Clear "saved" after 2 seconds
+      setTimeout(() => {
+        setSaveStatuses(prev => {
+          if (prev[key] === "saved") {
+            const next = { ...prev };
+            delete next[key];
+            return next;
+          }
+          return prev;
+        });
+      }, 2000);
     } catch (err) {
       console.error(err);
-      toast.error(`Failed to save changes to database`);
+      setSaveStatuses(prev => ({ ...prev, [key]: "failed" }));
+      toast.error("Failed to save changes");
+      // Clear "failed" after 4 seconds
+      setTimeout(() => {
+        setSaveStatuses(prev => {
+          if (prev[key] === "failed") {
+            const next = { ...prev };
+            delete next[key];
+            return next;
+          }
+          return prev;
+        });
+      }, 4000);
     }
   }, [updateStudent]);
 
   if (students.length === 0) {
     return (
-      <div className="text-center py-24 text-muted-fg bg-surface border border-border rounded-2xl">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted flex items-center justify-center">
-          <AlertTriangle size={28} className="text-muted-fg/50" />
+      <div className="px-6 py-20 text-center bg-card border border-border rounded-2xl">
+        <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-muted flex items-center justify-center">
+          <AlertTriangle size={20} strokeWidth={1.5} className="text-muted-fg" />
         </div>
-        <p className="text-lg font-medium text-foreground">No student data yet</p>
-        <p className="text-sm mt-2">
-          Select a school and class above, then upload photos to extract data
+        <p className="font-display font-bold text-[1rem] text-foreground tracking-tight">
+          No student data yet
+        </p>
+        <p className="text-[0.875rem] text-muted-fg mt-1.5 max-w-sm mx-auto">
+          Select a school, class, and section above, then upload photos to extract student data.
         </p>
       </div>
     );
   }
 
   return (
-    <div>
-      {/* Bulk action bar */}
-      {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 mb-3 px-3 py-2.5 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800">
-          <CheckCircle2 size={16} className="text-amber-700 dark:text-amber-400 flex-shrink-0" />
-          <span className="text-sm font-medium text-amber-800 dark:text-amber-300">
-            {selectedIds.size} row{selectedIds.size !== 1 ? "s" : ""} selected
-          </span>
-          <div className="flex-1" />
-          <button
-            onClick={handleDeleteSelected}
-            disabled={isDeleting}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-danger text-white
-                       hover:bg-red-700 dark:hover:bg-red-600 active:scale-[0.97] transition-all disabled:opacity-50"
-          >
-            {isDeleting ? <Loader2 size={14} className="animate-spin" /> : null}
-            Delete Selected
-          </button>
-          <button
-            onClick={() => setSelectedIds(new Set())}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg border border-amber-300 dark:border-amber-700
-                       text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors"
-          >
-            Clear
-          </button>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-fg">
+            <Search size={15} strokeWidth={2} />
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search this section..."
+            className="w-full h-10 pl-9 pr-3 rounded-lg border border-border bg-card text-[0.875rem] text-foreground
+                       focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
+          />
         </div>
-      )}
+      </div>
 
-      {/* Table */}
-      <div className="border border-border rounded-2xl overflow-hidden shadow-sm bg-card">
-        <div className="overflow-x-auto thin-scrollbar">
-          <div className="overflow-y-auto max-h-[60vh] thin-scrollbar sticky-header">
-            <table className="w-full min-w-[1200px] border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-muted/40">
-                  {/* Checkbox column */}
-                  <th className="w-10 px-3 py-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.size === students.length && students.length > 0}
-                      onChange={toggleAll}
-                      className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
-                    />
-                  </th>
-                  {/* Photo column */}
-                  <th className="w-12 px-3 py-3">
-                    Photo
-                  </th>
-                  {/* S.No */}
-                  <th className="w-12 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-fg">
-                    #
-                  </th>
-                  {FIELD_ORDER.map((field) => (
-                    <th
-                      key={field}
-                      onClick={() => handleSort(field)}
-                      className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-fg cursor-pointer hover:text-foreground transition-colors select-none whitespace-nowrap"
-                    >
-                      <span className="flex items-center gap-1">
-                        {FIELD_LABELS[field]}
-                        {sortField === field && (
-                          <span className="text-primary text-xs">{sortDir === "asc" ? "▲" : "▼"}</span>
-                        )}
-                      </span>
+      <div className="space-y-3">
+        {/* Bulk action bar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-warning/30 bg-warning-bg">
+            <span className="text-[0.8125rem] font-medium text-foreground">
+              <span className="font-mono tabular-nums">{selectedIds.size}</span> row{selectedIds.size !== 1 ? "s" : ""} selected
+            </span>
+            <div className="flex-1" />
+            <button
+              onClick={handleDeleteSelected}
+              disabled={isDeleting}
+              className="flex items-center gap-1.5 h-8 px-3 text-[0.8125rem] font-semibold rounded-md bg-danger text-primary-fg
+                       hover:bg-danger/90 active:translate-y-px disabled:opacity-50 transition-all"
+            >
+              {isDeleting ? <Loader2 size={13} className="animate-spin" /> : null}
+              Delete selected
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="h-8 px-3 text-[0.8125rem] font-medium rounded-md border border-border hover:bg-muted transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+
+        {/* Table */}
+        <div className="border border-border rounded-2xl overflow-hidden bg-card">
+          <div className="overflow-x-auto thin-scrollbar">
+            <div className="overflow-y-auto max-h-[60vh] thin-scrollbar sticky-header">
+              <table className="w-full min-w-[1200px] border-collapse">
+                <thead>
+                  <tr>
+                    <th className="w-10 px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.size === students.length && students.length > 0}
+                        onChange={toggleAll}
+                        className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+                        aria-label="Select all"
+                      />
                     </th>
-                  ))}
-                </tr>
-              </thead>
+                    <th className="w-12 px-3 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-fg">
+                      #
+                    </th>
+                    {FIELD_ORDER.map((field) => (
+                      <th
+                        key={field}
+                        onClick={() => handleSort(field)}
+                        className="px-3 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-fg cursor-pointer hover:text-foreground transition-colors select-none whitespace-nowrap"
+                      >
+                        <span className="flex items-center gap-1">
+                          {FIELD_LABELS[field]}
+                          {sortField === field && (
+                            <span className="text-primary text-[0.625rem]">{sortDir === "asc" ? "▲" : "▼"}</span>
+                          )}
+                        </span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
 
-              <tbody className="divide-y divide-border">
-                {sorted.map((student, idx) => {
-                  const selected = selectedIds.has(student.id);
-                  return (
-                    <tr
-                      key={student.id}
-                      className={`transition-colors hover:bg-muted/20 ${
-                        selected ? "bg-primary/[0.06] dark:bg-primary/[0.12]" : ""
-                      }`}
-                    >
-                      <td className="px-3 py-2">
-                        <input
-                          type="checkbox"
-                          checked={selected}
-                          onChange={() => toggleOne(student.id)}
-                          className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <PhotoUploadCell
-                          photoUrl={student.photoUrl}
-                          onUploadSuccess={(url: string) => {
-                            updateStudent(student.id, "photoUrl", url);
-                          }}
-                        />
-                      </td>
-                      <td className="px-3 py-2 text-sm text-muted-fg font-mono tabular-nums">
-                        {idx + 1}
-                      </td>
-                      {FIELD_ORDER.map((field) => (
-                        <td key={field} className="px-1 py-1.5">
-                          <EditableCell
-                            value={String(student[field] ?? "")}
-                            confidence={student.confidence[field]}
-                            onChange={(newVal: string) =>
-                              handleCellChange(student.id, field, newVal)
-                            }
+                <tbody className="divide-y divide-border">
+                  {sorted.map((student, idx) => {
+                    const selected = selectedIds.has(student.id);
+                    return (
+                      <tr
+                        key={student.id}
+                        className={`transition-colors ${selected
+                            ? "bg-primary/[0.05]"
+                            : "hover:bg-muted/30"
+                          }`}
+                      >
+                        <td className="px-3 py-2">
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={() => toggleOne(student.id)}
+                            className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+                            aria-label="Select row"
                           />
                         </td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <td className="px-3 py-2 text-[0.8125rem] text-muted-fg font-mono tabular-nums">
+                          {idx + 1}
+                        </td>
+                        {FIELD_ORDER.map((field) => (
+                          <td key={field} className="px-1 py-1.5">
+                            <EditableCell
+                              value={String(student[field] ?? "")}
+                              confidence={(student.confidence as any)[field]}
+                              saveStatus={saveStatuses[`${student.id}:${field}`] || "idle"}
+                              onChange={(newVal: string) =>
+                                handleCellChange(student.id, field, newVal)
+                              }
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

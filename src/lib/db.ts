@@ -35,6 +35,8 @@ export async function initDb(): Promise<void> {
     `CREATE TABLE IF NOT EXISTS schools (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
+      code TEXT DEFAULT '',
+      official_id TEXT DEFAULT '',
       address TEXT DEFAULT '',
       contact TEXT DEFAULT '',
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -64,7 +66,6 @@ export async function initDb(): Promise<void> {
       section_name TEXT NOT NULL,
       mobile_number TEXT DEFAULT '',
       address TEXT DEFAULT '',
-      photo_url TEXT DEFAULT '',
       academic_year TEXT NOT NULL,
       is_active INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -73,13 +74,19 @@ export async function initDb(): Promise<void> {
     )`,
   ]);
 
-  // Handle migration if photo_url is missing (in case DB was already created)
-  try {
-    await db.execute("ALTER TABLE students ADD COLUMN photo_url TEXT DEFAULT ''");
-  } catch (e: any) {
-    // Ignore error if column already exists
-    if (!e.message.includes("duplicate column name")) {
-      console.error("Migration error:", e.message);
+  // Handle migration if columns are missing (in case DB was already created)
+  const migrations = [
+    "ALTER TABLE schools ADD COLUMN code TEXT DEFAULT ''",
+    "ALTER TABLE schools ADD COLUMN official_id TEXT DEFAULT ''",
+  ];
+  for (const sql of migrations) {
+    try {
+      await db.execute(sql);
+    } catch (e: any) {
+      // Ignore error if column already exists
+      if (!e.message.includes("duplicate column name")) {
+        console.error("Migration error:", e.message);
+      }
     }
   }
 

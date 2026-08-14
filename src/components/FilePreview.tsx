@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, CheckCircle2, AlertTriangle, XCircle, RotateCcw } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 import type { QueueItem } from "@/types";
 
 interface FilePreviewProps {
@@ -16,87 +16,76 @@ export default function FilePreview({
 }: FilePreviewProps) {
   const statusConfig = {
     pending: {
-      icon: <div className="w-4 h-4 rounded-full border-2 border-muted-fg/50" />,
-      bg: "bg-surface border-border",
-      label: "Waiting...",
+      icon: <div className="w-2 h-2 rounded-full bg-muted-fg/40" />,
+      label: "Waiting",
       textClass: "text-muted-fg",
-      dot: "bg-muted-fg/30",
     },
     processing: {
-      icon: <Loader2 size={16} className="animate-spin" />,
-      bg: "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
-      label: "AI reading form...",
-      textClass: "text-blue-700 dark:text-blue-400",
-      dot: "bg-blue-500",
+      icon: <Loader2 size={13} className="animate-spin" />,
+      label: "Reading form",
+      textClass: "text-warning",
     },
     done: {
-      icon: <CheckCircle2 size={16} />,
-      bg: "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800",
-      label: "Done! Data extracted",
-      textClass: "text-green-700 dark:text-green-400",
-      dot: "bg-green-500",
+      icon: <CheckCircle2 size={13} />,
+      label: "Done",
+      textClass: "text-success",
     },
     error: {
-      icon: <XCircle size={16} />,
-      bg: "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800",
-      label: item.error || "Failed to process",
-      textClass: "text-red-700 dark:text-red-400",
-      dot: "bg-red-500",
+      icon: <XCircle size={13} />,
+      label: item.error || "Failed",
+      textClass: "text-danger",
     },
   };
 
   const config = statusConfig[item.status];
 
   return (
-    <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${config.bg} transition-all duration-300`}
-    >
-      {/* Thumbnail */}
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border bg-card">
       {item.thumbnail ? (
-        <div className="w-10 h-14 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border shadow-sm">
+        <div className="w-9 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0 border border-border">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={item.thumbnail}
             alt={item.fileName}
             className="w-full h-full object-cover"
           />
-        </div>
+       </div>
       ) : (
-        <div className="w-10 h-14 rounded-lg bg-muted flex-shrink-0 flex items-center justify-center border border-border">
-          <span className="text-[10px] text-muted-fg font-mono">IMG</span>
-        </div>
+        <div className="w-9 h-12 rounded-md bg-muted flex-shrink-0 flex items-center justify-center border border-border">
+          <span className="text-[0.625rem] text-muted-fg font-mono uppercase">IMG</span>
+       </div>
       )}
 
-      {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground truncate">{item.fileName}</p>
-        <div className={`flex items-center gap-1.5 text-xs ${config.textClass} mt-0.5`}>
+        <p className="text-[0.875rem] font-medium text-foreground truncate">{item.fileName}</p>
+        <div className={`flex items-center gap-1.5 text-[0.75rem] ${config.textClass} mt-0.5 font-medium`}>
           {config.icon}
           <span>{config.label}</span>
-        </div>
-      </div>
+       </div>
+     </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-0.5 flex-shrink-0">
         {item.status === "error" && onRetry && (
           <button
             onClick={() => onRetry(item.id)}
-            className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-muted-fg hover:text-primary transition-colors"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-muted-fg hover:text-foreground hover:bg-muted transition-colors"
             title="Retry this form"
+            aria-label="Retry"
           >
-            <RotateCcw size={15} />
-          </button>
+            <RotateCcw size={13} strokeWidth={1.75} />
+         </button>
         )}
         {onRemove && (
           <button
             onClick={() => onRemove(item.id)}
-            className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-muted-fg hover:text-danger transition-colors"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-muted-fg hover:text-danger hover:bg-danger-bg transition-colors"
             title="Remove from queue"
+            aria-label="Remove from queue"
           >
-            <XCircle size={15} />
-          </button>
+            <XCircle size={13} strokeWidth={1.75} />
+         </button>
         )}
-      </div>
-    </div>
+     </div>
+   </div>
   );
 }

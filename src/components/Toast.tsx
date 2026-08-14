@@ -5,8 +5,8 @@ import { createPortal } from "react-dom";
 import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
 import { subscribe, type ToastItem } from "@/lib/toast";
 
-const MAX_VISIBLE = 5;
-const EXIT_ANIM_MS = 300;
+const MAX_VISIBLE = 4;
+const EXIT_ANIM_MS = 200;
 
 const TYPE_STYLES: Record<
   ToastItem["type"],
@@ -23,8 +23,8 @@ const TYPE_STYLES: Record<
     Icon: AlertTriangle,
   },
   info: {
-    iconBg: "bg-primary/[0.08]",
-    iconFg: "text-primary",
+    iconBg: "bg-muted",
+    iconFg: "text-muted-fg",
     Icon: Info,
   },
 };
@@ -38,20 +38,17 @@ export default function Toast() {
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const [mounted, setMounted] = useState(false);
 
-  // Only render portal after mount (SSR safety)
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const dismiss = useCallback((id: string) => {
-    // Mark as leaving for exit animation, then remove after animation
     setToasts((prev) =>
       prev.map((t) => (t.id === id ? { ...t, leaving: true } : t))
     );
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, EXIT_ANIM_MS);
-    // Clear any pending auto-dismiss timer
     const timer = timersRef.current.get(id);
     if (timer) {
       clearTimeout(timer);
@@ -62,9 +59,7 @@ export default function Toast() {
   useEffect(() => {
     const unsub = subscribe((item) => {
       setToasts((prev) => {
-        // Cap at max visible — remove oldest first
         const trimmed = prev.length >= MAX_VISIBLE ? prev.slice(prev.length - MAX_VISIBLE + 1) : prev;
-        // Also dismiss the oldest if exceeding
         if (prev.length >= MAX_VISIBLE) {
           const oldest = prev[0];
           const timer = timersRef.current.get(oldest.id);
@@ -74,7 +69,6 @@ export default function Toast() {
         return [...trimmed, { ...item, leaving: false }];
       });
 
-      // Auto-dismiss timer (0 = sticky)
       if (item.duration > 0) {
         const timer = setTimeout(() => {
           dismiss(item.id);
@@ -84,7 +78,6 @@ export default function Toast() {
       }
     });
 
-    // Cleanup all timers on unmount
     return () => {
       unsub();
       for (const timer of timersRef.current.values()) clearTimeout(timer);
@@ -98,7 +91,7 @@ export default function Toast() {
     <div
       aria-live="polite"
       aria-label="Notifications"
-      className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none max-w-sm w-full"
+      className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none w-[min(22rem,calc(100vw-2rem))]"
     >
       {toasts.map((t) => {
         const { iconBg, iconFg, Icon } = TYPE_STYLES[t.type];
@@ -106,28 +99,28 @@ export default function Toast() {
           <div
             key={t.id}
             role="alert"
-            className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg bg-card border-border
+            className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl border border-border bg-card shadow-[0_1px_0_rgba(31,32,36,0.04)]
               ${t.leaving ? "animate-toast-exit" : "animate-toast-enter"}`}
           >
             <span
-              className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${iconBg}`}
+              className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${iconBg}`}
             >
-              <Icon size={16} className={iconFg} />
-            </span>
-            <p className="flex-1 text-sm font-medium text-foreground leading-snug pt-0.5">
+              <Icon size={15} strokeWidth={1.75} className={iconFg} />
+           </span>
+            <p className="flex-1 text-[0.875rem] font-medium text-foreground leading-snug pt-0.5">
               {t.message}
-            </p>
+           </p>
             <button
               onClick={() => dismiss(t.id)}
-              className="flex-shrink-0 p-1 rounded-lg text-muted-fg hover:text-foreground hover:bg-muted transition-colors -mr-1"
+              className="flex-shrink-0 p-1 rounded-md text-muted-fg hover:text-foreground hover:bg-muted transition-colors -mr-1 -mt-0.5"
               aria-label="Dismiss notification"
             >
-              <X size={16} />
-            </button>
-          </div>
+              <X size={15} strokeWidth={1.75} />
+           </button>
+         </div>
         );
       })}
-    </div>,
+   </div>,
     document.body
   );
 }

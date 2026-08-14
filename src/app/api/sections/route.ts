@@ -17,18 +17,20 @@ export async function GET(request: NextRequest) {
       sql: `
         SELECT
           s.id as section_id,
-          s.school_id,
+          sch.id as school_id,
           s.class_name,
           s.section_name,
           s.academic_year,
           sch.name as school_name,
+          sch.code as school_code,
+          sch.official_id as school_official_id,
           (
             SELECT COUNT(*)
             FROM students st
             WHERE st.section_id = s.id AND st.is_active = 1
           ) as student_count
-        FROM sections s
-        JOIN schools sch ON s.school_id = sch.id
+        FROM schools sch
+        LEFT JOIN sections s ON s.school_id = sch.id
         ${academicYear ? "WHERE s.academic_year = ?" : ""}
         ORDER BY sch.name, s.class_name, s.section_name
       `,
@@ -39,6 +41,8 @@ export async function GET(request: NextRequest) {
     const schoolsMap = new Map<string, {
       id: string;
       name: string;
+      code: string;
+      officialId: string;
       classes: Map<string, {
         name: string;
         sections: Array<{
@@ -57,11 +61,17 @@ export async function GET(request: NextRequest) {
         schoolsMap.set(schoolId, {
           id: schoolId,
           name: row.school_name as string,
+          code: (row.school_code as string) || "",
+          officialId: (row.school_official_id as string) || "",
           classes: new Map(),
         });
       }
 
       const school = schoolsMap.get(schoolId)!;
+
+      // If there is no section for this school, skip adding classes/sections
+      if (!row.section_id) continue;
+
       const className = row.class_name as string;
 
       if (!school.classes.has(className)) {
@@ -80,6 +90,8 @@ export async function GET(request: NextRequest) {
     const schools = Array.from(schoolsMap.values()).map((school) => ({
       id: school.id,
       name: school.name,
+      code: school.code,
+      officialId: school.officialId,
       classes: Array.from(school.classes.values()).map((cls) => ({
         name: cls.name,
         sections: cls.sections,

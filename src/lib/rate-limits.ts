@@ -3,7 +3,7 @@
 // Pauses batch processing automatically when limits are near.
 // Reads retryAfter from 429 error responses.
 
-interface RateLimitState {
+export interface RateLimitState {
   rpmUsed: number;         // requests in current minute window
   rpmLimit: number;        // actual limit from your AI Studio tier
   rpdUsed: number;         // requests made today

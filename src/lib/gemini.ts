@@ -119,7 +119,7 @@ export function parseClassSection(
  */
 export async function extractFromImage(
   imageBase64: string
-): Promise<{ results: GeminiExtractionResult[] | null; error?: string; retried: boolean }> {
+): Promise<{ results: GeminiExtractionResult[] | null; error?: string; retried: boolean; retryAfter?: number }> {
   const client = getClient();
 
   async function attempt(): Promise<{ results: GeminiExtractionResult[] | null; error?: string; retryAfter?: number }> {

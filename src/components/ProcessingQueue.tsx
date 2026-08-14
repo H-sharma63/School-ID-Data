@@ -25,39 +25,30 @@ export default function ProcessingQueue({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-3">
-      {/* Rate Limit Bar */}
+    <div className="space-y-4">
       <RateLimitBar />
 
-      {/* Queue Summary */}
-      <div className="flex items-center justify-between px-1">
-        <h3 className="text-sm font-semibold text-foreground">
-          Processing Queue ({queue.length} photo{queue.length !== 1 ? "s" : ""})
+      <div className="flex items-center justify-between">
+        <h3 className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted-fg">
+          Queue <span className="font-mono ml-1.5 text-muted-fg/70">{queue.length}</span>
         </h3>
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex items-center gap-3 text-[0.75rem] font-mono">
           {stats.pending > 0 && (
             <span className="text-muted-fg">{stats.pending} waiting</span>
           )}
           {stats.processing > 0 && (
-            <span className="text-primary font-semibold">
-              {stats.processing} processing
-            </span>
+            <span className="text-warning">{stats.processing} processing</span>
           )}
           {stats.done > 0 && (
-            <span className="text-success font-semibold">
-              {stats.done} done
-            </span>
+            <span className="text-success">{stats.done} done</span>
           )}
           {stats.error > 0 && (
-            <span className="text-danger font-semibold">
-              {stats.error} failed
-            </span>
+            <span className="text-danger">{stats.error} failed</span>
           )}
-        </div>
-      </div>
+       </div>
+     </div>
 
-      {/* File List */}
-      <div className="space-y-2 max-h-80 overflow-y-auto thin-scrollbar pr-1">
+      <div className="space-y-2 max-h-80 overflow-y-auto thin-scrollbar">
         {queue.map((item) => (
           <FilePreview
             key={item.id}
@@ -66,7 +57,7 @@ export default function ProcessingQueue({
             onRemove={onRemove}
           />
         ))}
-      </div>
-    </div>
+     </div>
+   </div>
   );
 }

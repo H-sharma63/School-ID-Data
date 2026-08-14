@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
+import { useState, useCallback } from "react";
 import { Plus, Upload, Download, Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 
@@ -37,7 +36,7 @@ export default function Toolbar() {
           className,
           sectionName,
           academicYear,
-          admissionNo: `M-${Date.now().toString().slice(-4)}`, // placeholder
+          admissionNo: `M-${Date.now().toString().slice(-4)}`,
           studentName: "New Student",
         }),
       });
@@ -70,7 +69,7 @@ export default function Toolbar() {
       };
 
       addStudent(empty);
-      toast.info("Empty row added — click cells to fill in data");
+      toast.info("Empty row added — click cells to fill in");
     } catch (err) {
       console.error(err);
       toast.error("Failed to add row");
@@ -81,7 +80,7 @@ export default function Toolbar() {
     if (students.length === 0) return;
     if (
       !window.confirm(
-        `Clear table view? (This does NOT delete data from the database, it just clears the current view)`
+        "Clear table view? Saved data in the database will not be affected."
       )
     )
       return;
@@ -111,7 +110,6 @@ export default function Toolbar() {
 
       if (!res.ok) throw new Error("Export failed");
 
-      // Handle file download
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -122,7 +120,7 @@ export default function Toolbar() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success(`Downloaded as ${format.toUpperCase()}`);
+      toast.success(`Downloaded ${format.toUpperCase()}`);
     } catch (err) {
       console.error(err);
       toast.error(`Failed to export ${format.toUpperCase()}`);
@@ -136,67 +134,67 @@ export default function Toolbar() {
   }, []);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-surface border border-border shadow-sm">
+    <div className="sticky bottom-0 z-30 flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-card border-t border-border shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.1)]">
       <div className="flex items-center gap-1.5">
         <button
           onClick={handleAddRow}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium
-                     bg-card border border-border text-foreground hover:bg-muted
-                     active:scale-[0.97] transition-all"
+          className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-[0.8125rem] font-medium
+                     border border-border bg-background text-foreground hover:bg-muted
+                     active:translate-y-px transition-all"
           title="Add a new empty row for manual data entry"
         >
-          <Plus size={16} />
-          <span className="hidden md:inline">Add Row</span>
-        </button>
+          <Plus size={14} strokeWidth={1.75} />
+          <span className="hidden md:inline">Add row</span>
+      </button>
 
         <button
           onClick={handleUploadMore}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium
-                     bg-card border border-border text-foreground hover:bg-muted
-                     active:scale-[0.97] transition-all"
+          className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-[0.8125rem] font-medium
+                     border border-border bg-background text-foreground hover:bg-muted
+                     active:translate-y-px transition-all"
           title="Upload more form photos"
         >
-          <Upload size={16} />
-          <span className="hidden md:inline">Upload More</span>
-        </button>
-      </div>
+          <Upload size={14} strokeWidth={1.75} />
+          <span className="hidden md:inline">Upload more</span>
+      </button>
+    </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
         <button
           onClick={() => handleExport("csv")}
           disabled={isExporting}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium
-                     bg-card border border-border text-foreground hover:bg-muted
-                     active:scale-[0.97] transition-all disabled:opacity-50"
+          className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-[0.8125rem] font-medium
+                     border border-border bg-background text-foreground hover:bg-muted
+                     active:translate-y-px transition-all disabled:opacity-50"
           title="Download CSV for Photoshop"
         >
-          <Download size={16} />
-          <span className="hidden md:inline">Export CSV</span>
-        </button>
+          <Download size={14} strokeWidth={1.75} />
+          <span className="hidden md:inline">CSV</span>
+      </button>
 
         <button
           onClick={() => handleExport("xlsx")}
           disabled={isExporting}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold
+          className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-[0.8125rem] font-semibold
                      bg-primary text-primary-fg hover:bg-primary-hover
-                     active:scale-[0.97] transition-all shadow-sm disabled:opacity-50"
+                     active:translate-y-px transition-all disabled:opacity-50"
           title="Download Excel file for review"
         >
-          {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-          <span>Export XLSX</span>
-        </button>
+          {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} strokeWidth={1.75} />}
+          <span>Excel</span>
+      </button>
 
         <button
           onClick={handleClearAll}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium
-                     text-danger bg-card border border-danger/25 hover:bg-danger-bg
-                     active:scale-[0.97] transition-all ml-2"
-          title="Clear table view"
+          className="flex items-center gap-1.5 h-9 px-3 ml-1 rounded-lg text-[0.8125rem] font-medium
+                     text-danger border border-border bg-background hover:bg-danger-bg hover:border-danger/30
+                     active:translate-y-px transition-all"
+          title="Clear table view (database is unaffected)"
         >
-          <Trash2 size={16} />
-          <span className="hidden md:inline">Clear View</span>
-        </button>
-      </div>
+          <Trash2 size={14} strokeWidth={1.75} />
+          <span className="hidden md:inline">Clear view</span>
+      </button>
     </div>
+  </div>
   );
 }

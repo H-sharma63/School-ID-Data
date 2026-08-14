@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Sparkles, Download, Trash2, Loader2, Play } from "lucide-react";
+import { Download, Trash2, Loader2, Zap } from "lucide-react";
 import { toast } from "@/lib/toast";
 
 import UploadZone from "@/components/UploadZone";
@@ -18,16 +18,12 @@ export default function QuickExportPage() {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-
-  // Custom batch name for export
   const [batchName, setBatchName] = useState("Quick_Export");
 
   const tableRef = useRef<HTMLDivElement>(null);
 
-  // ── File Selection & Real Processing ── //
   const handleFilesSelected = useCallback(
     (files: File[]) => {
-      // Initialize queue items
       const newItems: QueueItem[] = files.map((file) => ({
         id: uuidv4(),
         fileName: file.name,
@@ -42,7 +38,7 @@ export default function QuickExportPage() {
       }));
 
       processFiles(filesToProcess);
-      toast.info(`Processing ${files.length} form photo${files.length !== 1 ? "s" : ""}...`);
+      toast.info(`Processing ${files.length} form photo${files.length !== 1 ? "s" : ""}`);
     },
     []
   );
@@ -56,7 +52,7 @@ export default function QuickExportPage() {
       const processNextBatch = async () => {
         if (index >= itemsToProcess.length) {
           setIsProcessing(false);
-          toast.success("Extraction complete!", { duration: 4000 });
+          toast.success("Extraction complete");
           if (itemsToProcess.length > 0) {
             setTimeout(() => {
               tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -106,7 +102,6 @@ export default function QuickExportPage() {
                 ? extractData.data
                 : [extractData.data];
 
-              // Add to local state (NO DATABASE)
               for (const studentData of extractedStudents) {
                 const confidence = studentData.confidence || {};
                 const needsReview =
@@ -114,7 +109,7 @@ export default function QuickExportPage() {
                   Object.values(studentData).some((v: any) => v === "UNCLEAR");
 
                 const student: Student = {
-                  id: uuidv4(), // Generate local ID
+                  id: uuidv4(),
                   admissionNo: studentData.admissionNo,
                   studentName: studentData.studentName,
                   fatherName: studentData.fatherName,
@@ -191,14 +186,12 @@ export default function QuickExportPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // Send empty strings for school context since we don't have it
           schoolId: "quick-export",
           className: "",
           sectionName: "",
           academicYear: "",
           format,
           fileName: batchName,
-          // Pass the actual students directly to the export endpoint
           students: students.map(({ id, confidence, needsReview, createdAt, ...rest }) => rest)
         }),
       });
@@ -215,7 +208,7 @@ export default function QuickExportPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success(`Downloaded as ${format.toUpperCase()}`);
+      toast.success(`Downloaded ${format.toUpperCase()}`);
     } catch (err) {
       console.error(err);
       toast.error(`Failed to export ${format.toUpperCase()}`);
@@ -229,137 +222,134 @@ export default function QuickExportPage() {
   };
 
   const clearAll = () => {
-    if (window.confirm("Are you sure? This will clear all extracted data.")) {
+    if (window.confirm("Clear all extracted data?")) {
       setStudents([]);
       setQueue([]);
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10 space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-3 mb-6">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-sm font-medium">
-          <Play size={15} />
-          Quick Export Mode (No Database)
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-          Extract & Download
-        </h1>
-        <p className="text-muted-fg text-lg max-w-xl mx-auto leading-relaxed">
-          Upload forms, review, and download Excel instantly.
-          Data is never saved to the database.
-        </p>
-      </div>
+    <div className="max-w-6xl mx-auto px-6 py-10 sm:py-14 space-y-8">
+      <header className="space-y-2">
+        <div className="flex items-center gap-2 text-warning">
+          <Zap size={14} strokeWidth={1.75} />
+          <span className="font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.08em]">
+            Quick export · not saved
+         </span>
+       </div>
+        <h1 className="font-display text-[clamp(1.75rem,3.5vw,2.5rem)] font-bold tracking-tight text-foreground">
+          Extract and download
+       </h1>
+        <p className="text-[0.9375rem] text-muted-fg max-w-xl leading-relaxed">
+          Upload forms, review, and download Excel instantly. Data is held in your browser and never saved to a database.
+       </p>
+     </header>
 
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="p-5 sm:p-8 border border-border rounded-2xl bg-card shadow-sm space-y-8">
-          <UploadZone
-            onFilesSelected={handleFilesSelected}
-            disabled={isProcessing}
-          />
-
-          {queue.length > 0 && (
+      <section className="bg-card border border-border rounded-2xl p-6">
+        <UploadZone
+          onFilesSelected={handleFilesSelected}
+          disabled={isProcessing}
+        />
+        {queue.length > 0 && (
+          <div className="mt-6">
             <ProcessingQueue
               queue={queue}
               onRemove={handleRemoveQueueItem}
             />
-          )}
-        </div>
-      </div>
+         </div>
+        )}
+     </section>
 
-      {/* Review Table */}
       {students.length > 0 && (
-        <div ref={tableRef} className="space-y-4 pt-4 scroll-mt-20">
+        <section ref={tableRef} className="space-y-4 pt-2 scroll-mt-20">
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-foreground">
-                Review Data
-              </h2>
-              <p className="text-sm text-muted-fg mt-1">
+              <h2 className="font-display text-[1.375rem] font-bold tracking-tight text-foreground">
+                Review data
+             </h2>
+              <p className="text-[0.875rem] text-muted-fg mt-1">
                 Data is only stored in your browser temporarily.
-              </p>
-            </div>
+             </p>
+           </div>
 
-            {/* Toolbar */}
-            <div className="flex flex-wrap items-center gap-2 bg-surface p-2 rounded-xl border border-border">
+            <div className="flex flex-wrap items-center gap-2 p-2 rounded-xl bg-card border border-border">
               <input
                 type="text"
                 value={batchName}
                 onChange={(e) => setBatchName(e.target.value)}
                 placeholder="File name"
-                className="px-3 py-1.5 text-sm rounded-lg border border-border bg-background max-w-[150px]"
+                className="h-8 px-3 text-[0.8125rem] rounded-lg border border-border bg-background font-mono w-[10rem]"
               />
               <button
                 onClick={() => handleExport("xlsx")}
                 disabled={isExporting}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold
+                className="flex items-center gap-1.5 h-8 px-3.5 text-[0.8125rem] font-semibold rounded-lg
                            bg-primary text-primary-fg hover:bg-primary-hover
-                           transition-all shadow-sm disabled:opacity-50"
+                           active:translate-y-px transition-all disabled:opacity-50"
               >
-                {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                <span>Export XLSX</span>
-              </button>
+                {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} strokeWidth={1.75} />}
+                <span>Excel</span>
+             </button>
               <button
                 onClick={clearAll}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
-                           text-danger hover:bg-danger-bg transition-all ml-1"
+                className="flex items-center gap-1.5 h-8 px-3 text-[0.8125rem] font-medium rounded-lg
+                           text-danger hover:bg-danger-bg transition-colors ml-1"
               >
-                <Trash2 size={16} />
+                <Trash2 size={13} strokeWidth={1.75} />
                 <span>Clear</span>
-              </button>
-            </div>
-          </div>
+             </button>
+           </div>
+         </div>
 
-          {/* Simple Table */}
-          <div className="border border-border rounded-2xl overflow-hidden shadow-sm bg-card">
+          <div className="border border-border rounded-2xl overflow-hidden bg-card">
             <div className="overflow-x-auto thin-scrollbar">
               <div className="overflow-y-auto max-h-[60vh] thin-scrollbar sticky-header">
                 <table className="w-full min-w-[1000px] border-collapse">
                   <thead>
-                    <tr className="border-b border-border bg-muted/40">
+                    <tr>
                       <th className="w-10 px-3 py-3"></th>
-                      <th className="w-10 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-fg">#</th>
+                      <th className="w-10 px-3 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-fg">#</th>
                       {FIELD_ORDER.map((field) => (
-                        <th key={field} className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-fg">
+                        <th key={field} className="px-3 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-fg">
                           {FIELD_LABELS[field]}
-                        </th>
+                       </th>
                       ))}
-                    </tr>
-                  </thead>
+                   </tr>
+                 </thead>
                   <tbody className="divide-y divide-border">
                     {students.map((student, idx) => (
-                      <tr key={student.id} className="hover:bg-muted/20">
+                      <tr key={student.id} className="hover:bg-muted/30">
                         <td className="px-3 py-2 text-center">
                           <button
                             onClick={() => handleDeleteStudent(student.id)}
-                            className="text-muted-fg hover:text-danger p-1 rounded hover:bg-danger-bg"
+                            className="w-7 h-7 rounded-md flex items-center justify-center text-muted-fg hover:text-danger hover:bg-danger-bg transition-colors"
                             title="Remove row"
+                            aria-label="Remove row"
                           >
-                            <Trash2 size={14} />
-                          </button>
-                        </td>
-                        <td className="px-3 py-2 text-sm text-muted-fg font-mono tabular-nums">
+                            <Trash2 size={13} strokeWidth={1.75} />
+                         </button>
+                       </td>
+                        <td className="px-3 py-2 text-[0.8125rem] text-muted-fg font-mono tabular-nums">
                           {idx + 1}
-                        </td>
+                       </td>
                         {FIELD_ORDER.map((field) => (
                           <td key={field} className="px-1 py-1.5">
                             <EditableCell
                               value={String(student[field] ?? "")}
-                              confidence={student.confidence[field]}
+                              confidence={(student.confidence as any)[field]}
                               onChange={(newVal) => handleCellChange(student.id, field, newVal)}
                             />
-                          </td>
+                         </td>
                         ))}
-                      </tr>
+                     </tr>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
+                 </tbody>
+               </table>
+             </div>
+           </div>
+         </div>
+       </section>
       )}
-    </div>
+   </div>
   );
 }

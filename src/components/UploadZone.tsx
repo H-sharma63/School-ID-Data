@@ -90,8 +90,7 @@ export default function UploadZone({
   const reject = isDragReject;
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      {/* Hidden file input */}
+    <div>
       <input
         ref={inputRef}
         type="file"
@@ -102,7 +101,6 @@ export default function UploadZone({
         disabled={disabled}
       />
 
-      {/* Drop Zone */}
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -111,82 +109,61 @@ export default function UploadZone({
         tabIndex={0}
         aria-label="Drop form photos here or click Browse Files"
         className={`
-          relative border-[3px] border-dashed rounded-2xl p-10 sm:p-16
-          flex flex-col items-center justify-center gap-5
-          cursor-pointer transition-all duration-300 select-none
-          outline-none
+          relative border-2 border-dashed rounded-2xl px-8 py-12 sm:py-16
+          flex flex-col items-center justify-center gap-5 text-center
+          cursor-pointer transition-colors duration-150 outline-none
           ${
             active
-              ? "border-primary bg-primary/[0.06] scale-[1.01] shadow-lg shadow-primary/[0.1]"
+              ? "border-primary bg-primary/[0.04]"
               : reject
                 ? "border-danger bg-danger-bg"
-                : "border-border hover:border-muted-fg hover:bg-surface focus-visible:ring-2 focus-visible:ring-ring"
+                : "border-border hover:border-muted-fg/40 hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           }
           ${disabled ? "opacity-40 cursor-not-allowed" : ""}
         `}
       >
-        {/* Icon */}
         <div
-          className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+          className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-150 ${
             active
-              ? "bg-primary text-primary-fg shadow-lg scale-110"
+              ? "bg-primary text-primary-fg"
               : reject
-                ? "bg-danger/10 text-danger"
+                ? "bg-danger-bg text-danger"
                 : "bg-muted text-muted-fg"
           }`}
         >
           {reject ? (
-            <AlertCircle size={32} />
+            <AlertCircle size={26} strokeWidth={1.5} />
           ) : (
-            <Upload size={32} strokeWidth={1.5} />
+            <Upload size={26} strokeWidth={1.5} />
           )}
-        </div>
+       </div>
 
-        {/* Text */}
-        <div className="text-center max-w-sm">
+        <div className="max-w-sm">
           {active ? (
-            <p className="text-lg font-semibold text-primary">
-              Drop your form photos here!
-            </p>
+            <p className="font-display text-[1.125rem] font-bold text-primary tracking-tight">
+              Drop to upload
+           </p>
           ) : reject ? (
             <div>
-              <p className="text-lg font-semibold text-danger">
-                Invalid file type
-              </p>
-              <p className="text-sm text-danger/70 mt-0.5">
-                Only JPG, PNG, or WebP images are accepted
-              </p>
-            </div>
+              <p className="font-display text-[1.125rem] font-bold text-danger tracking-tight">
+                Unsupported file type
+             </p>
+              <p className="text-[0.875rem] text-muted-fg mt-1">
+                Only JPG, PNG, or WebP images are accepted.
+             </p>
+           </div>
           ) : (
             <div>
-              <p className="text-lg font-semibold text-foreground">
-                Drag &amp; drop form photos here
-              </p>
-              <p className="text-sm text-muted-fg mt-1">
-                or click Browse Files below
-              </p>
-            </div>
+              <p className="font-display text-[1.125rem] font-bold text-foreground tracking-tight">
+                Drop form photos here
+             </p>
+              <p className="text-[0.875rem] text-muted-fg mt-1">
+                or click to browse files
+             </p>
+           </div>
           )}
-        </div>
+       </div>
 
-        {/* Supported formats tag */}
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-muted-fg bg-muted/50 px-4 py-2 rounded-full">
-          <span className="flex items-center gap-1">
-            <ImageIcon size={13} /> JPG
-          </span>
-          <span className="flex items-center gap-1">
-            <ImageIcon size={13} /> PNG
-          </span>
-          <span className="flex items-center gap-1">
-            <ImageIcon size={13} /> WebP
-          </span>
-          <span className="opacity-40 hidden sm:inline">|</span>
-          <span className="hidden sm:inline">Max 10MB per file</span>
-          <span className="opacity-40 hidden sm:inline">|</span>
-          <span className="hidden sm:inline">Up to 100 files</span>
-        </div>
-
-        {/* Browse button */}
         <button
           type="button"
           onClick={(e) => {
@@ -194,13 +171,29 @@ export default function UploadZone({
             handleBrowse();
           }}
           disabled={disabled}
-          className="mt-1 px-6 py-3 rounded-xl bg-primary text-primary-fg text-sm font-semibold
-                     hover:bg-primary-hover active:scale-[0.98] transition-all duration-150
-                     disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          className="px-5 h-10 rounded-lg bg-primary text-primary-fg text-[0.875rem] font-semibold
+                     hover:bg-primary-hover active:translate-y-px transition-all duration-150
+                     disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Browse Files
-        </button>
-      </div>
-    </div>
+          Browse files
+       </button>
+
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.75rem] text-muted-fg font-mono">
+          <span className="flex items-center gap-1">
+            <ImageIcon size={12} strokeWidth={1.75} /> JPG
+         </span>
+          <span className="flex items-center gap-1">
+            <ImageIcon size={12} strokeWidth={1.75} /> PNG
+         </span>
+          <span className="flex items-center gap-1">
+            <ImageIcon size={12} strokeWidth={1.75} /> WebP
+         </span>
+          <span className="opacity-40">·</span>
+          <span>Max 10MB per file</span>
+          <span className="opacity-40">·</span>
+          <span>Up to 100 files</span>
+       </div>
+     </div>
+   </div>
   );
 }

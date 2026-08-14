@@ -1,23 +1,42 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import Toast from "@/components/Toast";
 import Navbar from "@/components/Navbar";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
+});
+
+// Satoshi is not on Google Fonts. Fall back to a local Satoshi install if present,
+// otherwise use Inter Tight for display as well (defined via CSS variable fallback).
+const satoshi = localFont({
+  variable: "--font-satoshi",
+  display: "swap",
+  // Optional: drop a Satoshi Variable file at /public/fonts/Satoshi-Variable.woff2
+  // and uncomment the lines below. Otherwise the CSS falls back to Inter Tight.
+  src: [
+    {
+      path: "../../public/fonts/Satoshi-Variable.woff2",
+      weight: "300 900",
+      style: "normal",
+    },
+  ],
+  fallback: ["Inter Tight", "system-ui", "sans-serif"],
 });
 
 export const metadata: Metadata = {
-  title: "School ID Card Extractor",
-  description:
-    "Upload handwritten forms, AI extracts student data, export to Excel",
+  title: "School ID Extractor",
+  description: "Read handwritten enrollment forms, review rosters, export to Excel.",
 };
 
 export default function RootLayout({
@@ -28,12 +47,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      // Start with dark class removed — theme script below sets it
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${interTight.variable} ${jetbrainsMono.variable} ${satoshi.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
-        {/* Inline script to set dark class before paint — avoids flash */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -48,12 +65,12 @@ export default function RootLayout({
             `,
           }}
         />
-      </head>
+     </head>
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <Navbar />
         <main className="flex-1">{children}</main>
         <Toast />
-      </body>
-    </html>
+     </body>
+   </html>
   );
 }

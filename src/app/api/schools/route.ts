@@ -31,6 +31,8 @@ export async function GET() {
     const schools = result.rows.map((row: any) => ({
       id: row.id,
       name: row.name,
+      code: row.code || "",
+      officialId: row.official_id || "",
       address: row.address || "",
       contact: row.contact || "",
       totalStudents: Number(row.total_students) || 0,
@@ -50,14 +52,14 @@ export async function POST(request: NextRequest) {
   try {
     await initDb();
 
-    let body: { name?: string; address?: string; contact?: string };
+    let body: { name?: string; code?: string; officialId?: string; address?: string; contact?: string };
     try {
       body = await request.json();
     } catch {
       return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     }
 
-    const { name, address = "", contact = "" } = body;
+    const { name, code = "", officialId = "", address = "", contact = "" } = body;
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
@@ -70,13 +72,13 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     await db.execute({
-      sql: `INSERT INTO schools (id, name, address, contact, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [id, name.trim(), address.trim(), contact.trim(), now, now],
+      sql: `INSERT INTO schools (id, name, code, official_id, address, contact, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [id, name.trim(), code.trim(), officialId.trim(), address.trim(), contact.trim(), now, now],
     });
 
     return NextResponse.json({
       success: true,
-      school: { id, name: name.trim(), address, contact, createdAt: now },
+      school: { id, name: name.trim(), code: code.trim(), officialId: officialId.trim(), address, contact, createdAt: now },
     });
   } catch (error: any) {
     console.error("POST /api/schools error:", error);
@@ -88,14 +90,14 @@ export async function PATCH(request: NextRequest) {
   try {
     await initDb();
 
-    let body: { id?: string; name?: string; address?: string; contact?: string };
+    let body: { id?: string; name?: string; code?: string; officialId?: string; address?: string; contact?: string };
     try {
       body = await request.json();
     } catch {
       return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     }
 
-    const { id, name, address, contact } = body;
+    const { id, name, code, officialId, address, contact } = body;
 
     if (!id) {
       return NextResponse.json({ error: "School ID is required." }, { status: 400 });
@@ -108,6 +110,14 @@ export async function PATCH(request: NextRequest) {
       if (name.trim().length === 0) return NextResponse.json({ error: "Name cannot be empty." }, { status: 400 });
       updates.push("name = ?");
       args.push(name.trim());
+    }
+    if (code !== undefined) {
+      updates.push("code = ?");
+      args.push(code.trim());
+    }
+    if (officialId !== undefined) {
+      updates.push("official_id = ?");
+      args.push(officialId.trim());
     }
     if (address !== undefined) {
       updates.push("address = ?");

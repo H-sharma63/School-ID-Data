@@ -23,7 +23,6 @@ export interface Student {
   classSection: string; // e.g. "V-B", "X-C"
   mobileNumber: string; // comma-separated if 2 numbers
   address: string;
-  photoUrl?: string; // Cloudinary URL for the student's photo
   confidence: ConfidenceMap;
   needsReview: boolean;
   createdAt: string; // ISO timestamp
@@ -50,7 +49,6 @@ export type StudentField = keyof Pick<
   | "classSection"
   | "mobileNumber"
   | "address"
-  | "photoUrl"
 >;
 
 export const FIELD_LABELS: Record<StudentField, string> = {
@@ -62,7 +60,6 @@ export const FIELD_LABELS: Record<StudentField, string> = {
   classSection: "Class & Section",
   mobileNumber: "Mobile Number",
   address: "Address",
-  photoUrl: "Photo URL",
 };
 
 export const FIELD_ORDER: StudentField[] = [
