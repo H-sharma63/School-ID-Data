@@ -99,7 +99,7 @@ export default function HomePage() {
           (fromUrl.sectionName ?? "") !== store.sectionName ||
           (fromUrl.academicYear ?? "") !== store.academicYear;
         if (needsApply) {
-          setSchoolContext(fromUrl.schoolId, store.schoolName || "");
+          setSchoolContext(fromUrl.schoolId ?? "", store.schoolName || "");
           setClassContext(
             fromUrl.className ?? "",
             fromUrl.sectionName ?? "",
