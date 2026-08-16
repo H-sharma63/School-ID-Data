@@ -3,11 +3,13 @@
 //       ?schoolId=&year=  → { years: string[], classes: string[] }
 // POST: Promote students in-place — updates class_name, section_name, academic_year directly.
 //       toClass === "GRADUATE" marks is_active = 0 instead.
+//       Admin only.
 //
 // Returns: { promoted, graduated }
 
 import { NextRequest, NextResponse } from "next/server";
 import { db, initDb } from "@/lib/db";
+import { requireAdmin } from "@/lib/auth-guard";
 
 interface PromoteRule {
   fromClass: string;
@@ -55,6 +57,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const adminCheck = await requireAdmin();
+  if (adminCheck.error) {
+    return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
+  }
+
   try {
     await initDb();
 

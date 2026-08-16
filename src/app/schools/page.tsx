@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Building2, Users, Loader2, ChevronDown, ChevronRight, Plus, UploadCloud, ArrowUpCircle } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { useSession } from "next-auth/react";
+import { canManageSchools, canPromoteStudents, canBulkImport } from "@/lib/rbac";
 import ImportStudentsModal from "@/components/ImportStudentsModal";
 import GlobalSearch from "@/components/GlobalSearch";
 import PromoteModal from "@/components/PromoteModal";
@@ -30,6 +32,12 @@ interface School {
 }
 
 export default function SchoolsPage() {
+  const { data: session } = useSession();
+  const role = (session?.user as any)?.role;
+  const isAdmin = canManageSchools(role);
+  const canPromote = canPromoteStudents(role);
+  const canImport = canBulkImport(role);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [schools, setSchools] = useState<School[]>([]);
@@ -178,34 +186,40 @@ export default function SchoolsPage() {
             School hierarchy
       </h1>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowPromoteModal(true)}
-              disabled={schools.length === 0}
-              className="flex items-center gap-1.5 h-10 px-4 text-[0.875rem] font-medium rounded-lg border border-border bg-background text-foreground
-                         hover:bg-muted active:translate-y-px transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              title={schools.length === 0 ? "Add a school first" : "Promote students to next academic year"}
-            >
-              <ArrowUpCircle size={16} strokeWidth={1.75} />
-              Promote
-            </button>
-            <button
-              onClick={() => setShowImportModal(true)}
-              disabled={schools.length === 0}
-              className="flex items-center gap-1.5 h-10 px-4 text-[0.875rem] font-medium rounded-lg border border-border bg-background text-foreground
-                         hover:bg-muted active:translate-y-px transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              title={schools.length === 0 ? "Add a school first" : "Import students from Excel/CSV"}
-            >
-              <UploadCloud size={16} strokeWidth={1.75} />
-              Import
-        </button>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 h-10 px-4 text-[0.875rem] font-semibold rounded-lg bg-primary text-primary-fg
-                         hover:bg-primary-hover active:translate-y-px transition-all"
-            >
-              <Plus size={16} strokeWidth={2} />
-              Add school
-        </button>
+            {canPromote && (
+              <button
+                onClick={() => setShowPromoteModal(true)}
+                disabled={schools.length === 0}
+                className="flex items-center gap-1.5 h-10 px-4 text-[0.875rem] font-medium rounded-lg border border-border bg-background text-foreground
+                           hover:bg-muted active:translate-y-px transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                title={schools.length === 0 ? "Add a school first" : "Promote students to next academic year"}
+              >
+                <ArrowUpCircle size={16} strokeWidth={1.75} />
+                Promote
+              </button>
+            )}
+            {canImport && (
+              <button
+                onClick={() => setShowImportModal(true)}
+                disabled={schools.length === 0}
+                className="flex items-center gap-1.5 h-10 px-4 text-[0.875rem] font-medium rounded-lg border border-border bg-background text-foreground
+                           hover:bg-muted active:translate-y-px transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                title={schools.length === 0 ? "Add a school first" : "Import students from Excel/CSV"}
+              >
+                <UploadCloud size={16} strokeWidth={1.75} />
+                Import
+              </button>
+            )}
+            {isAdmin && (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-1.5 h-10 px-4 text-[0.875rem] font-semibold rounded-lg bg-primary text-primary-fg
+                           hover:bg-primary-hover active:translate-y-px transition-all"
+              >
+                <Plus size={16} strokeWidth={2} />
+                Add school
+              </button>
+            )}
           </div>
        </div>
         <p className="text-[0.9375rem] text-muted-fg max-w-xl leading-relaxed">

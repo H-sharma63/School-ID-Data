@@ -3,6 +3,7 @@ import { Inter_Tight, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import Toast from "@/components/Toast";
 import Navbar from "@/components/Navbar";
+import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 
 const interTight = Inter_Tight({
@@ -67,9 +68,11 @@ export default function RootLayout({
         />
      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Toast />
+        <SessionProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Toast />
+        </SessionProvider>
      </body>
    </html>
   );

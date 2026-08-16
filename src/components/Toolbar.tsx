@@ -3,11 +3,17 @@
 import { useState, useCallback } from "react";
 import { Plus, Upload, Download, Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { useSession } from "next-auth/react";
+import { canDeleteStudents } from "@/lib/rbac";
 
 import { useStudentStore } from "@/store/useStudentStore";
 import type { Student } from "@/types";
 
 export default function Toolbar() {
+  const { data: session } = useSession();
+  const role = (session?.user as any)?.role;
+  const isAdmin = canDeleteStudents(role);
+
   const {
     schoolId,
     schoolName,
@@ -184,17 +190,19 @@ export default function Toolbar() {
           <span>Excel</span>
       </button>
 
-        <button
-          onClick={handleClearAll}
-          className="flex items-center gap-1.5 h-9 px-3 ml-1 rounded-lg text-[0.8125rem] font-medium
-                     text-danger border border-border bg-background hover:bg-danger-bg hover:border-danger/30
-                     active:translate-y-px transition-all"
-          title="Clear table view (database is unaffected)"
-        >
-          <Trash2 size={14} strokeWidth={1.75} />
-          <span className="hidden md:inline">Clear view</span>
-      </button>
+        {isAdmin && (
+          <button
+            onClick={handleClearAll}
+            className="flex items-center gap-1.5 h-9 px-3 ml-1 rounded-lg text-[0.8125rem] font-medium
+                       text-danger border border-border bg-background hover:bg-danger-bg hover:border-danger/30
+                       active:translate-y-px transition-all"
+            title="Clear table view (database is unaffected)"
+          >
+            <Trash2 size={14} strokeWidth={1.75} />
+            <span className="hidden md:inline">Clear view</span>
+        </button>
+        )}
+      </div>
     </div>
-  </div>
   );
 }

@@ -8,9 +8,11 @@
 //   - Inserts students in a batch.
 //   - Skips rows whose admissionNo already exists in this school (UNIQUE constraint) OR invalid rows.
 //   - Returns { inserted, skipped: [{row, admissionNo, name, reason}] }.
+//   Admin only.
 
 import { NextRequest, NextResponse } from "next/server";
 import { db, initDb } from "@/lib/db";
+import { requireAdmin } from "@/lib/auth-guard";
 
 interface RawStudent {
   admissionNo?: string;
@@ -23,6 +25,11 @@ interface RawStudent {
 }
 
 export async function POST(request: NextRequest) {
+  const adminCheck = await requireAdmin();
+  if (adminCheck.error) {
+    return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
+  }
+
   try {
     await initDb();
 

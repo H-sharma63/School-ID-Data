@@ -2,10 +2,11 @@
 // GET: List students with optional filters (schoolId, className, sectionName, academicYear)
 // POST: Add a new student row
 // PATCH: Update a student (body includes id + fields to update)
-// DELETE: Delete students by ids (body includes ids array)
+// DELETE: Delete students by ids (body includes ids array) (Admin only)
 
 import { NextRequest, NextResponse } from "next/server";
 import { db, initDb } from "@/lib/db";
+import { requireAdmin } from "@/lib/auth-guard";
 
 export async function GET(request: NextRequest) {
   try {
@@ -208,6 +209,11 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const adminCheck = await requireAdmin();
+  if (adminCheck.error) {
+    return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
+  }
+
   try {
     await initDb();
 

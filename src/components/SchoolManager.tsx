@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useStudentStore } from "@/store/useStudentStore";
+import { useSession } from "next-auth/react";
 import { Building2, Plus, Loader2, Settings2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { canManageSchools } from "@/lib/rbac";
 
 interface School {
   id: string;
@@ -15,6 +17,10 @@ interface School {
 }
 
 export default function SchoolManager() {
+  const { data: session } = useSession();
+  const role = (session?.user as any)?.role;
+  const isAdmin = canManageSchools(role);
+
   const {
     schoolId,
     className,
@@ -205,13 +211,15 @@ export default function SchoolManager() {
             Context
         </h2>
        </div>
-        <button
-          onClick={() => setShowManageModal(true)}
-          className="text-[0.8125rem] font-medium text-muted-fg hover:text-foreground transition-colors flex items-center gap-1.5"
-        >
-          <Settings2 size={14} strokeWidth={1.75} />
-          Manage schools
-       </button>
+        {isAdmin && (
+          <button
+            onClick={() => setShowManageModal(true)}
+            className="text-[0.8125rem] font-medium text-muted-fg hover:text-foreground transition-colors flex items-center gap-1.5"
+          >
+            <Settings2 size={14} strokeWidth={1.75} />
+            Manage schools
+         </button>
+        )}
      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-[1.5fr_1fr_1fr_1fr] gap-4">
@@ -245,16 +253,18 @@ export default function SchoolManager() {
                  </option>
                 ))}
              </select>
-              <button
-                onClick={() => setShowAddModal(true)}
-                disabled={isProcessing}
-                className="flex items-center justify-center w-11 h-11 rounded-lg border border-border bg-background text-foreground hover:bg-muted
-                           active:translate-y-px transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Add new school"
-                aria-label="Add new school"
-              >
-                <Plus size={17} strokeWidth={1.75} />
-             </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  disabled={isProcessing}
+                  className="flex items-center justify-center w-11 h-11 rounded-lg border border-border bg-background text-foreground hover:bg-muted
+                             active:translate-y-px transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Add new school"
+                  aria-label="Add new school"
+                >
+                  <Plus size={17} strokeWidth={1.75} />
+               </button>
+              )}
            </div>
           )}
        </div>

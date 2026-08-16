@@ -5,10 +5,16 @@ import { AlertTriangle, Loader2, Search } from "lucide-react";
 import { toast } from "@/lib/toast";
 import EditableCell, { SaveStatus } from "@/components/EditableCell";
 import { useStudentStore } from "@/store/useStudentStore";
+import { useSession } from "next-auth/react";
 import { FIELD_ORDER, FIELD_LABELS } from "@/types";
+import { canDeleteStudents } from "@/lib/rbac";
 import type { StudentField } from "@/types";
 
 export default function DataTable() {
+  const { data: session } = useSession();
+  const role = (session?.user as any)?.role;
+  const isAdmin = canDeleteStudents(role);
+
   const { students, updateStudent, deleteStudents } = useStudentStore();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sortField, setSortField] = useState<StudentField | "">("");
@@ -169,8 +175,8 @@ export default function DataTable() {
       </div>
 
       <div className="space-y-3">
-        {/* Bulk action bar */}
-        {selectedIds.size > 0 && (
+        {/* Bulk action bar - Admin only */}
+        {isAdmin && selectedIds.size > 0 && (
           <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-warning/30 bg-warning-bg">
             <span className="text-[0.8125rem] font-medium text-foreground">
               <span className="font-mono tabular-nums">{selectedIds.size}</span> row{selectedIds.size !== 1 ? "s" : ""} selected
@@ -201,16 +207,18 @@ export default function DataTable() {
               <table className="w-full min-w-[1200px] border-collapse">
                 <thead>
                   <tr>
-                    <th className="w-10 px-3 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.size === students.length && students.length > 0}
-                        onChange={toggleAll}
-                        className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
-                        aria-label="Select all"
-                      />
-                    </th>
-                    <th className="w-12 px-3 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-fg">
+                    {isAdmin && (
+                      <th className="w-10 px-3 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.size === students.length && students.length > 0}
+                          onChange={toggleAll}
+                          className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+                          aria-label="Select all"
+                        />
+                      </th>
+                    )}
+                    <th className={`w-12 px-3 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-fg ${isAdmin ? '' : 'pl-3'}`}>
                       #
                     </th>
                     {FIELD_ORDER.map((field) => (
@@ -241,16 +249,18 @@ export default function DataTable() {
                             : "hover:bg-muted/30"
                           }`}
                       >
-                        <td className="px-3 py-2">
-                          <input
-                            type="checkbox"
-                            checked={selected}
-                            onChange={() => toggleOne(student.id)}
-                            className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
-                            aria-label="Select row"
-                          />
-                        </td>
-                        <td className="px-3 py-2 text-[0.8125rem] text-muted-fg font-mono tabular-nums">
+                        {isAdmin && (
+                          <td className="px-3 py-2">
+                            <input
+                              type="checkbox"
+                              checked={selected}
+                              onChange={() => toggleOne(student.id)}
+                              className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+                              aria-label="Select row"
+                            />
+                          </td>
+                        )}
+                        <td className={`px-3 py-2 text-[0.8125rem] text-muted-fg font-mono tabular-nums ${isAdmin ? '' : 'pl-3'}`}>
                           {idx + 1}
                         </td>
                         {FIELD_ORDER.map((field) => (
