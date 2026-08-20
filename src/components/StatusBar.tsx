@@ -1,7 +1,6 @@
 "use client";
 
 import { useStudentStore } from "@/store/useStudentStore";
-import { Users, CheckCircle2, AlertTriangle } from "lucide-react";
 
 export default function StatusBar() {
   const { students } = useStudentStore();
@@ -11,30 +10,21 @@ export default function StatusBar() {
 
   if (total === 0) return null;
 
+  const pill = (color: "success" | "warning" | "muted", label: string, count: number) => (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded font-mono text-xs uppercase tracking-wider font-semibold
+      ${color === "success" ? "text-success bg-success-bg" : color === "warning" ? "text-warning bg-warning-bg" : "text-muted-fg bg-muted"}`}
+    >
+      <span className="tabular-nums">{count}</span> {label}
+    </span>
+  );
+
   return (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5 px-4 py-2.5 rounded-xl bg-card border border-border text-[0.8125rem]">
-      <div className="flex items-center gap-1.5 text-muted-fg">
-        <Users size={14} strokeWidth={1.5} />
-        <span>
-          <span className="font-mono tabular-nums text-foreground font-semibold">{total}</span> student{total !== 1 ? "s" : ""} loaded
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <span className="text-muted-fg text-[0.8125rem]">
+        <span className="font-mono tabular-nums text-foreground font-semibold">{total}</span> student{total !== 1 ? "s" : ""} loaded
       </span>
+      {pill("success", "ready", ready)}
+      {needsReview > 0 && pill("warning", "review", needsReview)}
     </div>
-
-      <div className="flex items-center gap-1.5 text-success">
-        <CheckCircle2 size={14} strokeWidth={1.5} />
-        <span>
-          <span className="font-mono tabular-nums font-semibold">{ready}</span> ready to export
-      </span>
-    </div>
-
-      {needsReview > 0 && (
-        <div className="flex items-center gap-1.5 text-warning">
-          <AlertTriangle size={14} strokeWidth={1.5} />
-          <span>
-            <span className="font-mono tabular-nums font-semibold">{needsReview}</span> need{needsReview === 1 ? "s" : ""} review
-        </span>
-      </div>
-      )}
-  </div>
   );
 }

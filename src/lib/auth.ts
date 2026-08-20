@@ -1,11 +1,6 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 
-const ADMIN_EMAILS = [
-  process.env.ADMIN_EMAIL_1?.toLowerCase(),
-  process.env.ADMIN_EMAIL_2?.toLowerCase(),
-].filter(Boolean) as string[];
-
 export const authConfig: NextAuthConfig = {
   providers: [
     Google({
@@ -24,33 +19,43 @@ export const authConfig: NextAuthConfig = {
 
   callbacks: {
     async signIn({ user }) {
-      if (!user.email) return false;
-      const email = user.email.toLowerCase();
-      const isAdmin = ADMIN_EMAILS.includes(email);
-      (user as any).role = isAdmin ? "ADMIN" : "TEACHER";
-      return true;
+      return !!user.email;
     },
 
     async jwt({ token, user, account }) {
       if (user) {
-        token.role = (user as any).role;
         token.email = user.email;
         token.name = user.name;
         token.image = user.image;
+        token.role = "USER";
       }
       if (account) {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
+      }
+      // If no image in token but we have access token, fetch from Google
+      if (!token.image && token.accessToken) {
+        try {
+          const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${token.accessToken}` }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.picture) token.image = data.picture;
+          }
+        } catch (e) {
+          console.warn('Failed to fetch Google profile picture:', e);
+        }
       }
       return token;
     },
 
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).role = token.role;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
         session.user.image = token.image as string;
+        (session.user as any).role = token.role as string;
       }
       return session;
     },

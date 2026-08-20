@@ -4,8 +4,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db, initDb } from "@/lib/db";
+import { requireAuth } from "@/lib/auth-guard";
 
 export async function GET(request: NextRequest) {
+  const authCheck = await requireAuth();
+  if (authCheck.error) return NextResponse.json({ error: authCheck.error }, { status: authCheck.status });
+
   try {
     await initDb();
 

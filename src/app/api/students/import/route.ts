@@ -12,7 +12,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db, initDb } from "@/lib/db";
-import { requireAdmin } from "@/lib/auth-guard";
+import { requireAuth } from "@/lib/auth-guard";
 
 interface RawStudent {
   admissionNo?: string;
@@ -25,10 +25,8 @@ interface RawStudent {
 }
 
 export async function POST(request: NextRequest) {
-  const adminCheck = await requireAdmin();
-  if (adminCheck.error) {
-    return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
-  }
+  const authCheck = await requireAuth();
+  if (authCheck.error) return NextResponse.json({ error: authCheck.error }, { status: authCheck.status });
 
   try {
     await initDb();

@@ -153,7 +153,7 @@ export default function PromoteModal({ open, onClose, schools }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4">
-      <div className="bg-card w-full max-w-lg rounded-2xl border border-border overflow-hidden shadow-xl flex flex-col max-h-[90vh]">
+      <div className="bg-card w-full max-w-lg rounded-xl border border-border overflow-hidden flex flex-col max-h-[90vh]">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">

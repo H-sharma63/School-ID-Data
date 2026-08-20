@@ -48,20 +48,6 @@ export default function EditableCell({
   const valueIsEmpty = value === "";
   const needsReview = valueIsUnclear || valueIsEmpty || confidence === "low" || confidence === "medium";
 
-  let cellClasses =
-    "px-3 py-2 text-[0.875rem] cursor-pointer transition-colors duration-150 relative group ";
-
-  if (valueIsUnclear || valueIsEmpty) {
-    cellClasses += "text-danger italic font-medium ";
-  } else if (confidence === "low" || confidence === "medium") {
-    cellClasses += "text-warning ";
-  } else {
-    cellClasses += "text-foreground hover:bg-muted/40 ";
-  }
-
-  cellClasses +=
-    "outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap min-w-[5rem] font-mono tabular-nums";
-
   if (editing) {
     return (
       <input
@@ -74,13 +60,27 @@ export default function EditableCell({
           if (e.key === "Enter") commit();
           if (e.key === "Escape") cancel();
         }}
-        className="w-full px-3 py-2 text-[0.875rem] border-b-2 border-primary rounded-none
-                   bg-muted/30 text-foreground outline-none font-mono tabular-nums
+        className="w-full px-3 py-2 text-[0.875rem] bg-card border-2 border-primary rounded-lg
+                   text-foreground outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background font-mono tabular-nums
                    min-w-[5rem]"
         autoFocus
       />
     );
   }
+
+  let cellClasses =
+    "px-3 py-2 text-[0.875rem] cursor-pointer transition-colors duration-150 relative group ";
+
+  if (valueIsUnclear || valueIsEmpty) {
+    cellClasses += "text-danger ";
+  } else if (confidence === "low" || confidence === "medium") {
+    cellClasses += "text-warning ";
+  } else {
+    cellClasses += "text-foreground hover:bg-muted/50 ";
+  }
+
+  cellClasses +=
+    "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background whitespace-nowrap min-w-[5rem] font-mono tabular-nums";
 
   return (
     <div
@@ -122,7 +122,7 @@ export default function EditableCell({
             <span className="text-[0.75rem] font-bold">UNCLEAR</span>
           </>
         ) : valueIsEmpty ? (
-          <span className="text-[0.75rem] italic opacity-50">(empty</span>
+          <span className="text-[0.75rem] opacity-50">(empty)</span>
         ) : (
           value
         )}

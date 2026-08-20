@@ -3,36 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import {
-  Zap,
-  LogOut,
-  UserCircle,
-  Palette,
-  Home,
-  Building2,
-} from "lucide-react";
+import { UserCircle, Palette, Home, Building2, Zap, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
 
-export default function Navbar() {
+interface LandingNavbarProps {
+  onLoginClick?: () => void;
+}
+
+export default function LandingNavbar({ onLoginClick }: LandingNavbarProps) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const [isDark, setIsDark] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
   }, []);
 
-  const toggleTheme = () => {
-    const html = document.documentElement;
-    const next = !html.classList.contains("dark");
-    html.classList.toggle("dark", next);
-    localStorage.setItem("theme", next ? "dark" : "light");
-    setIsDark(next);
-  };
-
-  // Loading skeleton
   if (status === "loading") {
     return (
       <header className="border-b border-border bg-background/85 backdrop-blur-sm sticky top-0 z-50">
@@ -49,7 +37,6 @@ export default function Navbar() {
     );
   }
 
-  // Unauthenticated – redirect to landing page
   if (!session) {
     return (
       <header className="border-b border-border bg-background/85 backdrop-blur-sm sticky top-0 z-50">
@@ -57,12 +44,24 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2.5 group/nav-brand" aria-label="School ID Data home">
             <Logo size={32} className="rounded-lg" />
           </Link>
+
+          <nav className="flex items-center gap-6">
+            <Link href="#how-it-works" className="text-sm font-medium text-muted-fg hover:text-foreground transition-colors">How it works</Link>
+            <Link href="#features" className="text-sm font-medium text-muted-fg hover:text-foreground transition-colors">Features</Link>
+            <Link href="#workflow" className="text-sm font-medium text-muted-fg hover:text-foreground transition-colors">Workflow</Link>
+            <button
+              onClick={onLoginClick}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-fg font-semibold text-sm hover:bg-primary-hover active:translate-y-[1px] transition-all duration-150"
+            >
+              Get started
+            </button>
+          </nav>
         </div>
       </header>
     );
   }
 
-  // Authenticated – dashboard navigation
+  // Authenticated - match the main navbar exactly
   const navLinks = [
     { href: "/dashboard", label: "Home", icon: Home },
     { href: "/schools", label: "Schools", icon: Building2 },
@@ -143,7 +142,11 @@ export default function Navbar() {
                   </div>
                   <button
                     onClick={() => {
-                      toggleTheme();
+                      const html = document.documentElement;
+                      const next = !html.classList.contains("dark");
+                      html.classList.toggle("dark", next);
+                      localStorage.setItem("theme", next ? "dark" : "light");
+                      setIsDark(next);
                       setShowUserMenu(false);
                     }}
                     className="w-full flex items-center gap-2 px-4 py-2.5 text-[0.875rem] text-muted-fg hover:text-foreground hover:bg-muted transition-colors"
@@ -155,7 +158,7 @@ export default function Navbar() {
                     onClick={() => signOut({ callbackUrl: "/" })}
                     className="w-full flex items-center gap-2 px-4 py-2.5 text-[0.875rem] text-danger hover:bg-danger-bg transition-colors"
                   >
-                    <LogOut size={16} strokeWidth={1.75} />
+                    <X size={16} strokeWidth={1.75} />
                     Sign out
                   </button>
                 </div>

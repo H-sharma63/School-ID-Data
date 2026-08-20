@@ -109,12 +109,12 @@ export default function UploadZone({
         tabIndex={0}
         aria-label="Drop form photos here or click Browse Files"
         className={`
-          relative border-2 border-dashed rounded-2xl px-8 py-12 sm:py-16
+          relative border-2 border-dashed rounded-xl px-8 py-12 sm:py-16
           flex flex-col items-center justify-center gap-5 text-center
           cursor-pointer transition-colors duration-150 outline-none
           ${
             active
-              ? "border-primary bg-primary/[0.04]"
+              ? "border-primary bg-primary/5"
               : reject
                 ? "border-danger bg-danger-bg"
                 : "border-border hover:border-muted-fg/40 hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -123,9 +123,9 @@ export default function UploadZone({
         `}
       >
         <div
-          className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-150 ${
+          className={`w-14 h-14 rounded-xl flex items-center justify-center transition-colors duration-150 ${
             active
-              ? "bg-primary text-primary-fg"
+              ? "bg-primary/10 text-primary"
               : reject
                 ? "bg-danger-bg text-danger"
                 : "bg-muted text-muted-fg"
@@ -172,7 +172,7 @@ export default function UploadZone({
           }}
           disabled={disabled}
           className="px-5 h-10 rounded-lg bg-primary text-primary-fg text-[0.875rem] font-semibold
-                     hover:bg-primary-hover active:translate-y-px transition-all duration-150
+                     hover:bg-primary-hover active:translate-y-[1px] transition-all duration-150
                      disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Browse files
@@ -180,13 +180,13 @@ export default function UploadZone({
 
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.75rem] text-muted-fg font-mono">
           <span className="flex items-center gap-1">
-            <ImageIcon size={12} strokeWidth={1.75} /> JPG
+            <span className="w-2 h-2 rounded bg-muted-fg/30" /> JPG
          </span>
           <span className="flex items-center gap-1">
-            <ImageIcon size={12} strokeWidth={1.75} /> PNG
+            <span className="w-2 h-2 rounded bg-muted-fg/30" /> PNG
          </span>
           <span className="flex items-center gap-1">
-            <ImageIcon size={12} strokeWidth={1.75} /> WebP
+            <span className="w-2 h-2 rounded bg-muted-fg/30" /> WebP
          </span>
           <span className="opacity-40">·</span>
           <span>Max 10MB per file</span>

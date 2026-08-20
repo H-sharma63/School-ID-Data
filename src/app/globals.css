@@ -5,24 +5,24 @@
 /* ── Fonts (loaded via next/font in layout, exposed as CSS variables) ── */
 
 :root {
-  /* ── Light mode ── */
-  --background: #FAF7F2;       /* Paper */
-  --foreground: #1F2024;       /* Charcoal */
-  --primary: #3D5A40;          /* Forest */
-  --primary-hover: #2F4632;
-  --primary-fg: #FFFFFF;
-  --muted: #F2EDE4;            /* Linen */
-  --muted-foreground: #6B6E76; /* Slate */
-  --border: #E8E2D6;           /* Whisper */
-  --ring: #3D5A40;             /* Moss */
-  --success: #3D5A40;          /* Forest */
-  --success-bg: #ECF1ED;       /* Sage wash */
-  --warning: #B45309;          /* Amber */
-  --warning-bg: #FEF6E7;       /* Amber wash */
-  --danger: #9B2C2C;           /* Brick */
-  --danger-bg: #FBECEC;        /* Brick wash */
-  --card: #FFFFFF;
-  --surface: #FFFFFF;
+  /* ── Light mode ── Hex palette derived from logo (#102E4C navy, #16845B green) ── */
+  --background: #F4F0E8;       /* Ivory — warm off-white */
+  --foreground: #102E4C;       /* Logo navy as ink — near-black charcoal */
+  --primary: #16845B;          /* Logo green — single accent */
+  --primary-hover: #126B4A;
+  --primary-fg: #F4F0E8;       /* Ivory for text on primary */
+  --muted: #E8E2D6;
+  --muted-foreground: #5A5E66;
+  --border: #D4CCBE;
+  --ring: #16845B;
+  --success: #16845B;
+  --success-bg: #E8F5ED;
+  --warning: #B45309;
+  --warning-bg: #FEF6E7;
+  --danger: #9B2C2C;
+  --danger-bg: #FBECEC;
+  --card: #FAF7F2;             /* Slightly warmer than background */
+  --surface: #FAF7F2;
 
   /* ── Font families (set by next/font) ── */
   --font-display: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif;
@@ -31,23 +31,23 @@
 }
 
 .dark {
-  --background: #1A1B1F;       /* Ink */
-  --foreground: #F0EBE0;       /* Paper */
-  --primary: #7BA17D;          /* Sage */
-  --primary-hover: #92B593;
-  --primary-fg: #1A1B1F;
-  --muted: #2C2E35;            /* Charcoal */
-  --muted-foreground: #9A9BA0; /* Fog */
-  --border: #383A42;           /* Dusk */
-  --ring: #7BA17D;
-  --success: #7BA17D;
-  --success-bg: #2A3A2C;
+  --background: #141A24;       /* Charcoal — deep warm dark, not pure black */
+  --foreground: #F0EBE0;       /* Ivory off-white */
+  --primary: #1FA06D;          /* Brighter green for dark mode */
+  --primary-hover: #2BD48A;
+  --primary-fg: #141A24;       /* Charcoal for text on primary */
+  --muted: #1A2230;
+  --muted-foreground: #8A8E96;
+  --border: #243044;
+  --ring: #1FA06D;
+  --success: #1FA06D;
+  --success-bg: #1A3A2E;
   --warning: #D97706;
   --warning-bg: #3A2E1A;
   --danger: #E57373;
   --danger-bg: #3A1F1F;
-  --card: #23252B;             /* Slate */
-  --surface: #23252B;
+  --card: #181E2A;             /* Slightly elevated charcoal */
+  --surface: #181E2A;
 }
 
 @theme inline {

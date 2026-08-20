@@ -5,7 +5,6 @@ import { useStudentStore } from "@/store/useStudentStore";
 import { useSession } from "next-auth/react";
 import { Building2, Plus, Loader2, Settings2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { canManageSchools } from "@/lib/rbac";
 
 interface School {
   id: string;
@@ -18,8 +17,6 @@ interface School {
 
 export default function SchoolManager() {
   const { data: session } = useSession();
-  const role = (session?.user as any)?.role;
-  const isAdmin = canManageSchools(role);
 
   const {
     schoolId,
@@ -203,35 +200,34 @@ export default function SchoolManager() {
   };
 
   return (
-    <section className="bg-card border border-border rounded-2xl p-6 sm:p-7">
+    <section className="bg-card border border-border rounded-xl p-6 sm:p-7">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
           <Building2 size={17} strokeWidth={1.5} className="text-muted-fg" />
           <h2 className="font-display font-bold text-[0.9375rem] tracking-tight text-foreground">
             Context
-        </h2>
-       </div>
-        {isAdmin && (
-          <button
-            onClick={() => setShowManageModal(true)}
-            className="text-[0.8125rem] font-medium text-muted-fg hover:text-foreground transition-colors flex items-center gap-1.5"
-          >
-            <Settings2 size={14} strokeWidth={1.75} />
-            Manage schools
-         </button>
-        )}
-     </div>
+          </h2>
+        </div>
+        <button
+          onClick={() => setShowManageModal(true)}
+          className="text-[0.8125rem] font-medium text-muted-fg hover:text-foreground transition-colors flex items-center gap-1.5"
+        >
+          <Settings2 size={14} strokeWidth={1.75} />
+          Manage schools
+        </button>
+
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-[1.5fr_1fr_1fr_1fr] gap-4">
         {/* School */}
         <div className="space-y-1.5">
           <label htmlFor="school-select" className="block text-[0.75rem] font-medium uppercase tracking-[0.08em] text-muted-fg">
             School
-         </label>
+          </label>
           {loading ? (
             <div className="h-11 w-full flex items-center justify-center rounded-lg border border-border bg-background">
               <Loader2 size={15} className="animate-spin text-muted-fg" />
-           </div>
+            </div>
           ) : (
             <div className="flex gap-2">
               <select
@@ -250,30 +246,30 @@ export default function SchoolManager() {
                 {schools.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
-                 </option>
+                  </option>
                 ))}
-             </select>
-              {isAdmin && (
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  disabled={isProcessing}
-                  className="flex items-center justify-center w-11 h-11 rounded-lg border border-border bg-background text-foreground hover:bg-muted
+              </select>
+
+              <button
+                onClick={() => setShowAddModal(true)}
+                disabled={isProcessing}
+                className="flex items-center justify-center w-11 h-11 rounded-lg border border-border bg-background text-foreground hover:bg-muted
                              active:translate-y-px transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Add new school"
-                  aria-label="Add new school"
-                >
-                  <Plus size={17} strokeWidth={1.75} />
-               </button>
-              )}
-           </div>
+                title="Add new school"
+                aria-label="Add new school"
+              >
+                <Plus size={17} strokeWidth={1.75} />
+              </button>
+
+            </div>
           )}
-       </div>
+        </div>
 
         {/* Class */}
         <div className="space-y-1.5">
           <label htmlFor="class-input" className="block text-[0.75rem] font-medium uppercase tracking-[0.08em] text-muted-fg">
             Class
-         </label>
+          </label>
           <input
             id="class-input"
             type="text"
@@ -285,13 +281,13 @@ export default function SchoolManager() {
                        focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors
                        disabled:opacity-50 disabled:cursor-not-allowed"
           />
-       </div>
+        </div>
 
         {/* Section */}
         <div className="space-y-1.5">
           <label htmlFor="section-input" className="block text-[0.75rem] font-medium uppercase tracking-[0.08em] text-muted-fg">
             Section
-         </label>
+          </label>
           <input
             id="section-input"
             type="text"
@@ -303,13 +299,13 @@ export default function SchoolManager() {
                        focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors
                        disabled:opacity-50 disabled:cursor-not-allowed"
           />
-       </div>
+        </div>
 
         {/* Year */}
         <div className="space-y-1.5">
           <label htmlFor="year-input" className="block text-[0.75rem] font-medium uppercase tracking-[0.08em] text-muted-fg">
             Year
-         </label>
+          </label>
           <input
             id="year-input"
             type="text"
@@ -321,26 +317,26 @@ export default function SchoolManager() {
                        focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors
                        disabled:opacity-50 disabled:cursor-not-allowed"
           />
-       </div>
-     </div>
+        </div>
+      </div>
 
       {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4">
-          <div className="bg-card w-full max-w-sm rounded-2xl border border-border overflow-hidden">
+          <div className="bg-card w-full max-w-sm rounded-xl border border-border overflow-hidden">
             <div className="px-6 pt-6 pb-2">
               <h3 className="font-display text-[1.25rem] font-bold text-foreground tracking-tight">
                 Add school
-             </h3>
+              </h3>
               <p className="text-[0.875rem] text-muted-fg mt-1.5 leading-relaxed">
                 Create a new school folder. You can add classes and students after.
-             </p>
-           </div>
+              </p>
+            </div>
             <form onSubmit={handleCreateSchool} className="px-6 pb-6 pt-4 space-y-4">
               <div className="space-y-1.5">
                 <label htmlFor="new-school-name" className="block text-[0.8125rem] font-medium text-foreground">
                   School name
-               </label>
+                </label>
                 <input
                   id="new-school-name"
                   type="text"
@@ -352,12 +348,12 @@ export default function SchoolManager() {
                   autoFocus
                   required
                 />
-             </div>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <label htmlFor="new-school-code" className="block text-[0.75rem] font-medium uppercase tracking-[0.08em] text-muted-fg">
                     Short code
-                </label>
+                  </label>
                   <input
                     id="new-school-code"
                     type="text"
@@ -371,7 +367,7 @@ export default function SchoolManager() {
                 <div className="space-y-1.5">
                   <label htmlFor="new-school-official-id" className="block text-[0.75rem] font-medium uppercase tracking-[0.08em] text-muted-fg">
                     Official ID
-                </label>
+                  </label>
                   <input
                     id="new-school-official-id"
                     type="text"
@@ -382,10 +378,10 @@ export default function SchoolManager() {
                                focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
                   />
                 </div>
-                </div>
+              </div>
               <p className="text-[0.75rem] text-muted-fg -mt-1">
                 Both optional. Short code is your own label; official ID is the government-issued one.
-                </p>
+              </p>
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
@@ -393,7 +389,7 @@ export default function SchoolManager() {
                   className="h-10 px-4 text-[0.875rem] font-medium rounded-lg hover:bg-muted text-foreground transition-colors"
                 >
                   Cancel
-               </button>
+                </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !newSchoolName.trim()}
@@ -402,26 +398,26 @@ export default function SchoolManager() {
                 >
                   {isSubmitting ? <Loader2 size={15} className="animate-spin" /> : null}
                   Create school
-               </button>
-             </div>
-           </form>
-         </div>
-       </div>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Manage Modal */}
       {showManageModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4">
-          <div className="bg-card w-full max-w-lg rounded-2xl border border-border overflow-hidden flex flex-col max-h-[80vh]">
+          <div className="bg-card w-full max-w-lg rounded-xl border border-border overflow-hidden flex flex-col max-h-[80vh]">
             <div className="px-6 py-5 border-b border-border flex items-center justify-between">
               <div>
                 <h3 className="font-display text-[1.25rem] font-bold text-foreground tracking-tight">
                   Manage schools
-               </h3>
+                </h3>
                 <p className="text-[0.8125rem] text-muted-fg mt-0.5">
                   Edit names or delete schools.
-               </p>
-             </div>
+                </p>
+              </div>
               <button
                 onClick={() => {
                   setShowManageModal(false);
@@ -430,14 +426,14 @@ export default function SchoolManager() {
                 className="h-9 px-3.5 text-[0.8125rem] font-medium rounded-lg bg-muted text-foreground hover:bg-border transition-colors"
               >
                 Done
-             </button>
-           </div>
+              </button>
+            </div>
 
             <div className="p-2 overflow-y-auto thin-scrollbar">
               {schools.length === 0 ? (
                 <div className="px-6 py-12 text-center text-[0.875rem] text-muted-fg">
                   No schools added yet.
-               </div>
+                </div>
               ) : (
                 <ul className="divide-y divide-border">
                   {schools.map((s) => (
@@ -476,15 +472,15 @@ export default function SchoolManager() {
                                        hover:bg-primary-hover disabled:opacity-50 transition-colors"
                           >
                             Save
-                         </button>
+                          </button>
                           <button
                             type="button"
                             onClick={() => setEditSchoolId(null)}
                             className="h-9 px-3 text-[0.8125rem] font-medium rounded-lg border border-border hover:bg-muted transition-colors"
                           >
                             Cancel
-                         </button>
-                       </form>
+                          </button>
+                        </form>
                       ) : (
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2 min-w-0">
@@ -519,7 +515,7 @@ export default function SchoolManager() {
                               aria-label="Edit school name"
                             >
                               <Pencil size={14} strokeWidth={1.75} />
-                           </button>
+                            </button>
                             <button
                               onClick={() => handleDeleteSchool(s.id, s.name)}
                               disabled={isSubmitting}
@@ -528,18 +524,18 @@ export default function SchoolManager() {
                               aria-label="Delete school"
                             >
                               {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} strokeWidth={1.75} />}
-                           </button>
-                         </div>
-                       </div>
+                            </button>
+                          </div>
+                        </div>
                       )}
-                   </li>
+                    </li>
                   ))}
-               </ul>
+                </ul>
               )}
-           </div>
-         </div>
-       </div>
+            </div>
+          </div>
+        </div>
       )}
-   </section>
+    </section>
   );
 }

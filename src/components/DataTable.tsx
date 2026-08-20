@@ -7,13 +7,10 @@ import EditableCell, { SaveStatus } from "@/components/EditableCell";
 import { useStudentStore } from "@/store/useStudentStore";
 import { useSession } from "next-auth/react";
 import { FIELD_ORDER, FIELD_LABELS } from "@/types";
-import { canDeleteStudents } from "@/lib/rbac";
 import type { StudentField } from "@/types";
 
 export default function DataTable() {
   const { data: session } = useSession();
-  const role = (session?.user as any)?.role;
-  const isAdmin = canDeleteStudents(role);
 
   const { students, updateStudent, deleteStudents } = useStudentStore();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -142,8 +139,8 @@ export default function DataTable() {
 
   if (students.length === 0) {
     return (
-      <div className="px-6 py-20 text-center bg-card border border-border rounded-2xl">
-        <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-muted flex items-center justify-center">
+      <div className="px-6 py-20 text-center bg-card border border-border rounded-xl">
+        <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-muted flex items-center justify-center">
           <AlertTriangle size={20} strokeWidth={1.5} className="text-muted-fg" />
         </div>
         <p className="font-display font-bold text-[1rem] text-foreground tracking-tight">
@@ -176,7 +173,7 @@ export default function DataTable() {
 
       <div className="space-y-3">
         {/* Bulk action bar - Admin only */}
-        {isAdmin && selectedIds.size > 0 && (
+        {selectedIds.size > 0 && (
           <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-warning/30 bg-warning-bg">
             <span className="text-[0.8125rem] font-medium text-foreground">
               <span className="font-mono tabular-nums">{selectedIds.size}</span> row{selectedIds.size !== 1 ? "s" : ""} selected
@@ -201,24 +198,22 @@ export default function DataTable() {
         )}
 
         {/* Table */}
-        <div className="border border-border rounded-2xl overflow-hidden bg-card">
+        <div className="border border-border rounded-xl overflow-hidden">
           <div className="overflow-x-auto thin-scrollbar">
             <div className="overflow-y-auto max-h-[60vh] thin-scrollbar sticky-header">
               <table className="w-full min-w-[1200px] border-collapse">
                 <thead>
-                  <tr>
-                    {isAdmin && (
-                      <th className="w-10 px-3 py-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.size === students.length && students.length > 0}
-                          onChange={toggleAll}
-                          className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
-                          aria-label="Select all"
-                        />
-                      </th>
-                    )}
-                    <th className={`w-12 px-3 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-fg ${isAdmin ? '' : 'pl-3'}`}>
+                  <tr className="bg-background border-b-[1.5px] border-foreground">
+                    <th className="w-10 px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.size === students.length && students.length > 0}
+                        onChange={toggleAll}
+                        className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+                        aria-label="Select all"
+                      />
+                    </th>
+                    <th className="w-12 px-3 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-fg pl-3">
                       #
                     </th>
                     {FIELD_ORDER.map((field) => (
@@ -245,12 +240,11 @@ export default function DataTable() {
                       <tr
                         key={student.id}
                         className={`transition-colors ${selected
-                            ? "bg-primary/[0.05]"
-                            : "hover:bg-muted/30"
+                            ? "bg-primary/8 border-l-[1.5px] border-primary"
+                            : "hover:bg-muted/50"
                           }`}
                       >
-                        {isAdmin && (
-                          <td className="px-3 py-2">
+                        <td className="px-3 py-2">
                             <input
                               type="checkbox"
                               checked={selected}
@@ -259,8 +253,7 @@ export default function DataTable() {
                               aria-label="Select row"
                             />
                           </td>
-                        )}
-                        <td className={`px-3 py-2 text-[0.8125rem] text-muted-fg font-mono tabular-nums ${isAdmin ? '' : 'pl-3'}`}>
+                        <td className="px-3 py-2 text-[0.8125rem] text-muted-fg font-mono tabular-nums pl-3">
                           {idx + 1}
                         </td>
                         {FIELD_ORDER.map((field) => (

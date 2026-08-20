@@ -24,28 +24,33 @@ export default function ProcessingQueue({
     error: queue.filter((q) => q.status === "error").length,
   };
 
+  const pill = (color: "success" | "warning" | "muted" | "danger", label: string, count: number) => (
+    count > 0 ? (
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded font-mono text-xs uppercase tracking-wider font-semibold
+        ${color === "success" ? "text-success bg-success-bg"
+          : color === "warning" ? "text-warning bg-warning-bg"
+          : color === "danger" ? "text-danger bg-danger-bg"
+          : "text-muted-fg bg-muted"}`}
+      >
+        <span className="tabular-nums">{count}</span> {label}
+      </span>
+    ) : null
+  );
+
   return (
     <div className="space-y-4">
       <RateLimitBar />
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h3 className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-muted-fg">
           Queue <span className="font-mono ml-1.5 text-muted-fg/70">{queue.length}</span>
         </h3>
-        <div className="flex items-center gap-3 text-[0.75rem] font-mono">
-          {stats.pending > 0 && (
-            <span className="text-muted-fg">{stats.pending} waiting</span>
-          )}
-          {stats.processing > 0 && (
-            <span className="text-warning">{stats.processing} processing</span>
-          )}
-          {stats.done > 0 && (
-            <span className="text-success">{stats.done} done</span>
-          )}
-          {stats.error > 0 && (
-            <span className="text-danger">{stats.error} failed</span>
-          )}
-       </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {pill("muted", "waiting", stats.pending)}
+          {pill("warning", "processing", stats.processing)}
+          {pill("success", "done", stats.done)}
+          {pill("danger", "failed", stats.error)}
+        </div>
      </div>
 
       <div className="space-y-2 max-h-80 overflow-y-auto thin-scrollbar">

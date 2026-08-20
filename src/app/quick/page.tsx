@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Download, Trash2, Loader2, Zap } from "lucide-react";
 import { toast } from "@/lib/toast";
 
+import Navbar from "@/components/Navbar";
 import UploadZone from "@/components/UploadZone";
 import ProcessingQueue from "@/components/ProcessingQueue";
 import { optimizeImage } from "@/lib/image";
@@ -229,7 +230,10 @@ export default function QuickExportPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 sm:py-14 space-y-8">
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navbar />
+      <main className="flex-1">
+        <div className="max-w-6xl mx-auto px-6 py-10 sm:py-14 space-y-8">
       <header className="space-y-2">
         <div className="flex items-center gap-2 text-warning">
           <Zap size={14} strokeWidth={1.75} />
@@ -350,6 +354,8 @@ export default function QuickExportPage() {
          </div>
        </section>
       )}
-   </div>
+        </div>
+      </main>
+    </div>
   );
 }

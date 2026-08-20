@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Building2, Users, Loader2, ChevronDown, ChevronRight, Plus, UploadCloud, ArrowUpCircle } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useSession } from "next-auth/react";
-import { canManageSchools, canPromoteStudents, canBulkImport } from "@/lib/rbac";
+import Navbar from "@/components/Navbar";
 import ImportStudentsModal from "@/components/ImportStudentsModal";
 import GlobalSearch from "@/components/GlobalSearch";
 import PromoteModal from "@/components/PromoteModal";
@@ -33,10 +33,6 @@ interface School {
 
 export default function SchoolsPage() {
   const { data: session } = useSession();
-  const role = (session?.user as any)?.role;
-  const isAdmin = canManageSchools(role);
-  const canPromote = canPromoteStudents(role);
-  const canImport = canBulkImport(role);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -178,7 +174,10 @@ export default function SchoolsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10 sm:py-14 space-y-8">
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navbar />
+      <main className="flex-1">
+        <div className="max-w-4xl mx-auto px-6 py-10 sm:py-14 space-y-8">
       <header className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-display text-[clamp(1.75rem,3.5vw,2.5rem)] font-bold tracking-tight text-foreground flex items-center gap-3">
@@ -186,7 +185,6 @@ export default function SchoolsPage() {
             School hierarchy
       </h1>
           <div className="flex items-center gap-2">
-            {canPromote && (
               <button
                 onClick={() => setShowPromoteModal(true)}
                 disabled={schools.length === 0}
@@ -197,8 +195,7 @@ export default function SchoolsPage() {
                 <ArrowUpCircle size={16} strokeWidth={1.75} />
                 Promote
               </button>
-            )}
-            {canImport && (
+            
               <button
                 onClick={() => setShowImportModal(true)}
                 disabled={schools.length === 0}
@@ -209,8 +206,6 @@ export default function SchoolsPage() {
                 <UploadCloud size={16} strokeWidth={1.75} />
                 Import
               </button>
-            )}
-            {isAdmin && (
               <button
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-1.5 h-10 px-4 text-[0.875rem] font-semibold rounded-lg bg-primary text-primary-fg
@@ -219,7 +214,6 @@ export default function SchoolsPage() {
                 <Plus size={16} strokeWidth={2} />
                 Add school
               </button>
-            )}
           </div>
        </div>
         <p className="text-[0.9375rem] text-muted-fg max-w-xl leading-relaxed">
@@ -433,6 +427,8 @@ export default function SchoolsPage() {
         onClose={() => setShowPromoteModal(false)}
         schools={schools}
       />
+        </div>
+      </main>
     </div>
   );
 }
