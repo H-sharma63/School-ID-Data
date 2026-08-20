@@ -411,7 +411,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Google Gemini Vision** - AI extraction
 - **NextAuth.js** - Authentication
